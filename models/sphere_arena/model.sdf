@@ -1,0 +1,88 @@
+<?xml version='1.0'?>
+<sdf version='1.4'>
+  <model name="sphere_arena">
+    <static>true</static>
+
+    <link name="south_wall">
+      <pose>0 -0.5375 0.0375 0 0 0</pose>
+
+      <collision name='collision'>
+        <geometry>
+          <box>
+            <size>1.15 0.075 0.075</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <visual name='visual'>
+        <geometry>
+          <box>
+            <size>1.15 0.075 0.075</size>
+          </box>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="north_wall">
+      <pose>0 0.5375 0.0375 0 0 0</pose>
+
+      <collision name='collision'>
+        <geometry>
+          <box>
+            <size>1.15 0.075 0.075</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <visual name='visual'>
+        <geometry>
+          <box>
+            <size>1.15 0.075 0.075</size>
+          </box>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="west_wall">
+      <pose>-0.5375 0 0.0375 0 0 1.57</pose>
+
+      <collision name='collision'>
+        <geometry>
+          <box>
+            <size>1.15 0.075 0.075</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <visual name='visual'>
+        <geometry>
+          <box>
+            <size>1.15 0.075 0.075</size>
+          </box>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="east_wall">
+      <pose>0.5375 0 0.0375 0 0 1.57</pose>
+
+      <collision name='collision'>
+        <geometry>
+          <box>
+            <size>1.15 0.075 0.075</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <visual name='visual'>
+        <geometry>
+          <box>
+            <size>1.15 0.075 0.075</size>
+          </box>
+        </geometry>
+      </visual>
+    </link>
+
+  </model>
+</sdf>
+
