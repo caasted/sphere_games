@@ -10,9 +10,9 @@ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:[INSERT_PATH_TO_REPO]/king_of_the_hill
 
 Copy all files in models/ to your ~/.gazebo/models/ directory
 
-Create and configure a virtual environment for managing Python packages. If virtualenv isn't already installed on your sytem, run `sudo apt install virtualenv` and complete the installation process. Next, run the following commands to create a virtual environment and load it with the necessary python packages:
-
+Create and configure a virtual environment for managing Python packages:
 ```
+sudo apt install virtualenv python-opencv
 mkdir python2_env
 virtualenv python2_env --python=python2.7
 source python2_env/bin/activate
