@@ -26,12 +26,11 @@ In a terminal, run `roscore`
 In a second terminal, 
 ```
 cd [REPO_PATH]/king_of_the_hill/
-gzserver --verbose proof_of_concept_arena.world
+source /usr/share/gazebo/setup.sh
+rosrun gazebo_ros gazebo proof_of_concept_arena.world
 ```
 
-In a third terminal, run `gzclient`
-
-In a fourth terminal, issue rostopic pub commands or execute python scripts.
+In a third terminal, issue rostopic pub commands or execute python scripts.
 
 rostopic pub example:
 ```
