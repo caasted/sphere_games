@@ -10,6 +10,16 @@ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:[INSERT_PATH_TO_REPO]/king_of_the_hill
 
 Copy all files in models/ to your ~/.gazebo/models/ directory
 
+Create and configure a virtual environment for managing Python packages. If virtualenv isn't already installed on your sytem, run `sudo apt install virtualenv` and complete the installation process. Next, run the following commands to create a virtual environment and load it with the necessary python packages:
+
+```
+mkdir python2_env
+virtualenv python2_env --python=python2.7
+source python2_env/bin/activate
+pip install --upgrade pip
+pip install numpy pyyaml rospkg catkin_pkg
+```
+
 ## Build
 In a terminal, 
 ```
@@ -36,4 +46,13 @@ rostopic pub example:
 ```
 rostopic pub /blue_sphere/vel_cmd std_msgs/Float32 -- 1.57
 ```
+
+rospy pub example:
+```
+source ~/python2_env/bin/activate
+cd [repo_path]/king_of_the_hill/
+python sphere_tracker.py
+```
+
+Running the sphere_tracker script also issues random angular velocity and yaw commands to all four of the spheres.
 
