@@ -16,40 +16,78 @@ purple_vel = 0.
 center_x = 1920 / 2.
 center_y = 1080 / 2.
 
-def red_sphere(sphere_center):
+red_Q_table = {}
+
+yaw_actions = np.array(list(range(8))) * np.pi / 4
+vel_actions = np.array(list(range(8))) * 2
+
+exploration_rate = 1.0
+
+def get_grid(sphere_center):
     delta_x = center_x - sphere_center.x
     delta_y = center_y - sphere_center.y
+    location_value = 1 - np.sqrt(delta_x ** 2 + delta_y ** 2) / 566.
+    delta_x = int(delta_x / 100.) + 4 # Convert to range(8)
+    delta_y = int(delta_y / 100.) + 4 # Convert to range(8)
+    return delta_x, delta_y, location_value
 
-    global red_yaw, red_vel
-    red_yaw = np.arctan2(-delta_y, delta_x)
-    red_vel = np.sqrt(delta_x ** 2 + delta_y ** 2) / 10.
+def red_sphere(sphere_center):
+    global red_Q_table, red_yaw, red_vel
+
+    grid_x, grid_y, current_value = get_grid(sphere_center)
+
+    if 'previous_value' in red_Q_table:
+        previous_value = red_Q_table['previous_value']
+        previous_grid = red_Q_table['previous_grid']
+        previous_choice = red_Q_table['previous_choice']
+        reward = current_value - previous_value
+        red_Q_table[previous_grid][previous_choice] += reward
+
+    if (np.random.random() < exploration_rate 
+        or (grid_x, grid_y) not in red_Q_table):
+        yaw_choice = np.random.choice(yaw_actions)
+        vel_choice = np.random.choice(vel_actions)
+    else:
+        options = red_Q_table[(grid_x, grid_y)].keys()
+        highest = options[0]
+        highest_value = -float('inf')
+        for option in options:
+            option_value = red_Q_table[(grid_x, grid_y)][option]
+            if option_value > highest_value:
+                highest = option
+                highest_value = option_value
+        yaw_choice, vel_choice = highest
+
+    if (grid_x, grid_y) not in red_Q_table:
+        red_Q_table[(grid_x, grid_y)] = {}
+    if (yaw_choice, vel_choice) not in red_Q_table[(grid_x, grid_y)]:
+        red_Q_table[(grid_x, grid_y)][(yaw_choice, vel_choice)] = 0.
+    red_Q_table['previous_value'] = current_value
+    red_Q_table['previous_grid'] = (grid_x, grid_y)
+    red_Q_table['previous_choice'] = (yaw_choice, vel_choice)
+    print "Exploration rate: {}, Position Value: {}".format(exploration_rate, 
+        current_value)
+
+    red_yaw = yaw_choice
+    red_vel = vel_choice
     return
 
 def blue_sphere(sphere_center):
-    delta_x = center_x - sphere_center.x
-    delta_y = center_y - sphere_center.y
-
     global blue_yaw, blue_vel
-    blue_yaw = np.arctan2(-delta_y, delta_x)
-    blue_vel = np.sqrt(delta_x ** 2 + delta_y ** 2) / 30.
+    blue_yaw = np.random.choice(yaw_actions)
+    blue_vel = np.random.choice(vel_actions)
     return
 
 def green_sphere(sphere_center):
-    delta_x = center_x - sphere_center.x
-    delta_y = center_y - sphere_center.y
-
     global green_yaw, green_vel
-    green_yaw = np.arctan2(-delta_y, delta_x)
-    green_vel = np.sqrt(delta_x ** 2 + delta_y ** 2) / 40.
+    green_yaw = np.random.choice(yaw_actions)
+    green_vel = np.random.choice(vel_actions)
     return
 
 def purple_sphere(sphere_center):
-    delta_x = center_x - sphere_center.x
-    delta_y = center_y - sphere_center.y
-
     global purple_yaw, purple_vel
-    purple_yaw = np.arctan2(-delta_y, delta_x)
-    purple_vel = np.sqrt(delta_x ** 2 + delta_y ** 2) / 50.
+    purple_yaw = np.random.choice(yaw_actions)
+    purple_vel = np.random.choice(vel_actions)
     return
 
 def init_spheres():
@@ -71,7 +109,8 @@ def init_spheres():
     pub_purple_vel = rospy.Publisher('/purple_sphere/vel_cmd', std_msgs.msg.Float32, queue_size=1)
     pub_purple_yaw = rospy.Publisher('/purple_sphere/yaw_cmd', std_msgs.msg.Float32, queue_size=1)
 
-    rate = rospy.Rate(0.5) # Hz
+    global exploration_rate
+    rate = rospy.Rate(1) # Hz
     while not rospy.is_shutdown():
         pub_red_yaw.publish(red_yaw)
         pub_red_vel.publish(red_vel)
@@ -82,6 +121,7 @@ def init_spheres():
         pub_purple_yaw.publish(purple_yaw)
         pub_purple_vel.publish(purple_vel)
         rate.sleep()
+        exploration_rate *= 0.999
     return
 
 if __name__ == '__main__':
