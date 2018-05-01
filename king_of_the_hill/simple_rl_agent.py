@@ -33,6 +33,7 @@ def get_grid(sphere_center):
 
 def red_sphere(sphere_center):
     global red_Q_table, red_yaw, red_vel
+    expectation = 0.
 
     grid_x, grid_y, current_value = get_grid(sphere_center)
 
@@ -40,10 +41,10 @@ def red_sphere(sphere_center):
         previous_value = red_Q_table['previous_value']
         previous_grid = red_Q_table['previous_grid']
         previous_choice = red_Q_table['previous_choice']
-        reward = current_value - previous_value
+        reward = (current_value - previous_value) - 0.001
         red_Q_table[previous_grid][previous_choice] += reward
 
-    if (np.random.random() > epoch / 2000. 
+    if (epoch < 100. 
         or (grid_x, grid_y) not in red_Q_table):
         yaw_choice = np.random.choice(yaw_actions)
         vel_choice = np.random.choice(vel_actions)
@@ -58,6 +59,7 @@ def red_sphere(sphere_center):
                 highest_value = option_value
         if highest_value > 0:
             yaw_choice, vel_choice = highest
+            expectation = highest_value
         else:
             yaw_choice = np.random.choice(yaw_actions)
             vel_choice = np.random.choice(vel_actions)
@@ -69,7 +71,7 @@ def red_sphere(sphere_center):
     red_Q_table['previous_value'] = current_value
     red_Q_table['previous_grid'] = (grid_x, grid_y)
     red_Q_table['previous_choice'] = (yaw_choice, vel_choice)
-    print "Epoch: {}, Position Value: {}".format(epoch, current_value)
+    print "Epoch: {}, Position Value: {:.04}, Expected Reward: {:.04}".format(epoch, current_value, expectation)
 
     red_yaw = yaw_choice
     red_vel = vel_choice
