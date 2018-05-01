@@ -89,7 +89,7 @@ def pub_sub_init():
 
     rospy.init_node('sphere_tracker', anonymous=True)
 
-    rate = rospy.Rate(10) # Hz
+    rate = rospy.Rate(5) # Hz
     while not rospy.is_shutdown():
         pub_red_center.publish(red_center)
         pub_blue_center.publish(blue_center)
