@@ -41,10 +41,10 @@ def red_sphere(sphere_center):
         previous_value = red_Q_table['previous_value']
         previous_grid = red_Q_table['previous_grid']
         previous_choice = red_Q_table['previous_choice']
-        reward = (current_value - previous_value) - 0.001
+        reward = (current_value - previous_value) - 0.01 + current_value / 50.
         red_Q_table[previous_grid][previous_choice] += reward
 
-    if (epoch < 100. 
+    if (epoch < 1000. 
         or (grid_x, grid_y) not in red_Q_table):
         yaw_choice = np.random.choice(yaw_actions)
         vel_choice = np.random.choice(vel_actions)
