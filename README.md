@@ -56,7 +56,9 @@ cd [repo_path]/king_of_the_hill/
 python simple_rl_agent.py
 ```
 
-The red sphere will learn to move towards the center of the frame, using Q-learning, while the other three spheres will move about randomly. By 8,000 epochs the red sphere will have a strong tendency to stay near the center of the image.
+The red sphere will learn to move towards the center of the frame, using Q-learning, while the other three spheres will move about randomly, occasionally knocking the red sphere out of its oscillations near the center. 
+
+By 17 seconds into the video below, the red sphere has a strong tendency to stay near the center of the image.
 
 [![8000 epochs of Q-learning](https://i9.ytimg.com/vi/6YAlH6CpblQ/hqdefault.jpg?sqp=CJSipNcF&rs=AOn4CLC3M6p1sq_V0l-I9Bdm9P8slTDhOA)](https://www.youtube.com/embed/6YAlH6CpblQ)
 
