@@ -98,7 +98,7 @@ async function startProgram() {
         var travel = Math.sqrt(delta_x * delta_x + delta_y * delta_y);
 　
         // Calculate error
-        var error = distance_choices[distance_index] - travel;
+        var error = Math.abs(distance_choices[distance_index] - travel);
 　
         // Indicate proximity to target with LEDs
         if (error > 0.5) {
