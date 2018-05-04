@@ -10,8 +10,10 @@ blue_center = Point(0, 0, 0)
 green_center = Point(0, 0, 0)
 purple_center = Point(0, 0, 0)
 
+counter = 0
+
 def receive_image(image_data):
-    global red_center, blue_center, green_center, purple_center
+    global red_center, blue_center, green_center, purple_center #, counter
 
     # print "Received image: {}".format(image_data.format)
     image_array = np.fromstring(image_data.data, np.uint8)
@@ -75,6 +77,9 @@ def receive_image(image_data):
     print blue_center
     print green_center
     print purple_center
+    # if counter % 20 == 0:
+    #     cv2.imwrite('time_lapse/{0:08d}.png'.format(counter), cv2_image)
+    counter += 1
     cv2.imshow('cv2_image', cv2_image)
     cv2.waitKey(2)
     return
