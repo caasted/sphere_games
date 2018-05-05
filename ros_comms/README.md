@@ -2,9 +2,7 @@
 Exposes basic Sphero interface as a ROS node, allowing control via rospy.
 
 ## Installation
-Connect to your Sphero SPRK+ via Bluetooth, then modify line 7 of "sphero_command.js" to match the Bluetooth device ID of your own Sphero SPRK+.
-
-Install Node.JS, Sphero.JS, and rosnodejs:
+First, connect to your Sphero SPRK+ via Bluetooth. Then, install Node.JS, Sphero.JS, and rosnodejs:
 ```
 cd ~/
 curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
@@ -38,6 +36,9 @@ roscore
 In a second terminal window:
 ```
 cd [SPHERE_GAMES_REPO_PATH]/ros_comms/
+```
+Next, modify line 7 of "sphero_command.js" to match the Bluetooth device ID of your own Sphero SPRK+. Then run:
+```
 node sphero_command.js
 ```
 
