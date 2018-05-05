@@ -7,7 +7,7 @@ Connect to your Sphero SPRK+ via Bluetooth, then modify line 7 of "sphero_comman
 Install Node.JS, Sphero.JS, and rosnodejs:
 ```
 cd ~/
-curl -sL https://deb.nodesource.com/setup-8.x | sudo -E bash -
+curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
 sudo apt install nodejs
 git clone https://github.com/orbotix/sphero.js
 cd sphero.js
