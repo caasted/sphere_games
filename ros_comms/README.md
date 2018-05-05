@@ -12,8 +12,10 @@ sudo apt install nodejs
 git clone https://github.com/orbotix/sphero.js
 cd sphero.js
 npm install noble
-sudo npm install -g
-sudo npm install rosnodejs -g
+sudo mkdir /usr/lib/node_modules
+sudo chown -R [USERNAME]:[USERNAME] /usr/lib/node_modules
+npm install -g
+npm install rosnodejs -g
 sudo setcap cap_net_raw+eip $(eval readlink -f 'which node')
 ```
 
