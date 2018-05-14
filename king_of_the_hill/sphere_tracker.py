@@ -13,7 +13,7 @@ purple_center = Point(0, 0, 0)
 counter = 0
 
 def receive_image(image_data):
-    global red_center, blue_center, green_center, purple_center #, counter
+    global red_center, blue_center, green_center, purple_center, counter
 
     # print "Received image: {}".format(image_data.format)
     image_array = np.fromstring(image_data.data, np.uint8)
