@@ -54,8 +54,8 @@ def receive_image(image_data):
     # if counter % 20 == 0:
     #     cv2.imwrite('time_lapse/{0:08d}.png'.format(counter), cv2_image)
     counter += 1
-    cv2.imshow('cv2_image', cv2_image)
-    cv2.waitKey(2)
+    # cv2.imshow('cv2_image', cv2_image)
+    # cv2.waitKey(2)
     return
 
 def pub_sub_init():
