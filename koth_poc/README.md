@@ -9,10 +9,10 @@ Designed in Ubuntu 16.04 using ROS Kinetic and Gazebo 7.
 Make sure the following commands have been added to your .bashrc file or ran in the terminal used to launch rosrun:
 ```
 source /opt/ros/kinetic/setup.bash
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:[INSERT_PATH_TO_REPO]/king_of_the_hill/build
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:[INSERT_PATH_TO_REPO]/koth_poc/build
 ```
 
-Copy all files in models/ to your ~/.gazebo/models/ directory
+Copy all files in sphere_games/models/ to your ~/.gazebo/models/ directory
 
 Create and configure a virtual environment for managing Python packages:
 ```
@@ -27,7 +27,7 @@ pip install numpy pyyaml rospkg catkin_pkg
 ## Build
 In a terminal, 
 ```
-cd [REPO_PATH]/king_of_the_hill/
+cd [REPO_PATH]/koth_poc/
 mkdir build
 cd build
 cmake ../
@@ -39,7 +39,7 @@ In a terminal, run `roscore`
 
 In a second terminal, 
 ```
-cd [REPO_PATH]/king_of_the_hill/
+cd [REPO_PATH]/koth_poc/
 source /usr/share/gazebo/setup.sh
 rosrun gazebo_ros gazebo proof_of_concept_arena.world
 ```
@@ -47,14 +47,14 @@ rosrun gazebo_ros gazebo proof_of_concept_arena.world
 In a third terminal, run the sphere tracker python script:
 ```
 source ~/python2_env/bin/activate
-cd [repo_path]/king_of_the_hill/
+cd [repo_path]/koth_poc/
 python sphere_tracker.py
 ```
 
 In a fourth terminal, run the simple reinforcement learning agent script:
 ```
 source ~/python2_env/bin/activate
-cd [repo_path]/king_of_the_hill/
+cd [repo_path]/koth_poc/
 python simple_rl_agent.py
 ```
 
