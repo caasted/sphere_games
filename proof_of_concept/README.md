@@ -12,8 +12,6 @@ source /opt/ros/kinetic/setup.bash
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:[INSERT_PATH_TO_REPO]/proof_of_concept/build
 ```
 
-Copy all files in sphere_games/models/ to your ~/.gazebo/models/ directory
-
 Create and configure a virtual environment for managing Python packages:
 ```
 sudo apt install virtualenv python-opencv
