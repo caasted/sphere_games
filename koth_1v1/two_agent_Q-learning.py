@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import rospy
 
@@ -39,11 +41,10 @@ def Q_learning(sphere_center, Q_table):
         previous_value = Q_table['previous_value']
         previous_grid = Q_table['previous_grid']
         previous_choice = Q_table['previous_choice']
-        reward = (current_value - previous_value) - 0.01 + current_value / 50.
+        reward = (current_value - previous_value) - 0.01 + current_value / 100.
         Q_table[previous_grid][previous_choice] += reward
 
-    if (epoch < 1000. 
-        or (heading, distance) not in Q_table):
+    if ((heading, distance) not in Q_table):
         yaw_choice = np.random.choice(yaw_actions)
         vel_choice = np.random.choice(vel_actions)
     else:
@@ -83,7 +84,25 @@ def blue_sphere(sphere_center):
     blue_yaw, blue_vel = Q_learning(sphere_center, blue_Q_table)
     return
 
+def parse_dict(unformatted):
+    formatted = {}
+    for key in unformatted.item().keys():
+        formatted[key] = unformatted.item().get(key)
+    return formatted
+
 def init_spheres():
+    global epoch, red_Q_table, blue_Q_table
+    if os.path.isfile('red_agent.npy'):
+        red_Q_table = parse_dict(np.load('red_agent.npy'))
+        epoch = red_Q_table['epochs']
+        print "Loaded red agent from file."
+    else:
+        red_Q_table['epochs'] = 0
+        print "New agent started."
+    if os.path.isfile('blue_agent.npy'):
+        blue_Q_table = parse_dict(np.load('blue_agent.npy'))
+        print "Loaded blue agent from file."
+
     sub_red_center = rospy.Subscriber('/red_sphere/center', Point, red_sphere, queue_size=1)
     sub_blue_center = rospy.Subscriber('/blue_sphere/center', Point, blue_sphere, queue_size=1)
     rospy.init_node('sphere_command', anonymous=True)
@@ -94,15 +113,22 @@ def init_spheres():
     pub_blue_vel = rospy.Publisher('/blue_sphere/vel_cmd', std_msgs.msg.Float32, queue_size=1)
     pub_blue_yaw = rospy.Publisher('/blue_sphere/yaw_cmd', std_msgs.msg.Float32, queue_size=1)
     
-    global epoch
     rate = rospy.Rate(5) # Hz
+    noise = 0.1
     while not rospy.is_shutdown():
-        pub_red_yaw.publish(red_yaw)
-        pub_red_vel.publish(red_vel)
-        pub_blue_yaw.publish(blue_yaw)
-        pub_blue_vel.publish(blue_vel)
+        pub_red_yaw.publish(red_yaw + noise * (np.random.random() - 0.5))
+        pub_red_vel.publish(red_vel + noise * (np.random.random() - 0.5))
+        pub_blue_yaw.publish(blue_yaw + noise * (np.random.random() - 0.5))
+        pub_blue_vel.publish(blue_vel + noise * (np.random.random() - 0.5))
         rate.sleep()
         epoch += 1
+        if epoch >= red_Q_table['epochs'] + 2000:
+            red_Q_table['epochs'] = epoch
+            print red_Q_table['epochs']
+            np.save('red_agent.npy', red_Q_table)
+            np.save('blue_agent.npy', blue_Q_table)
+            print "Training complete. Agents saved."
+            break
     return
 
 if __name__ == '__main__':
