@@ -69,7 +69,7 @@ def Q_learning(sphere_center, Q_table):
     if (yaw_choice, vel_choice) not in Q_table[(heading, distance)]:
         Q_table[(heading, distance)][(yaw_choice, vel_choice)] = 0.
     Q_table['previous_value'] = current_value
-    if current_value > 0.9:
+    if current_value > 0.8: # Edge of green hill
         Q_table['score'] += 1
     Q_table['previous_grid'] = (heading, distance)
     Q_table['previous_choice'] = (yaw_choice, vel_choice)
