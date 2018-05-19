@@ -18,7 +18,7 @@ red_Q_table = {}
 blue_Q_table = {}
 
 yaw_actions = np.array(list(range(8))) * np.pi / 4
-vel_actions = np.array(list(range(1, 9))) * 2
+vel_actions = np.array(list(range(8))) * 2
 
 epoch = 0
 
@@ -41,8 +41,9 @@ def Q_learning(sphere_center, Q_table):
         previous_value = Q_table['previous_value']
         previous_grid = Q_table['previous_grid']
         previous_choice = Q_table['previous_choice']
-        reward = (current_value - previous_value) - 0.01 + current_value / 100.
-        Q_table[previous_grid][previous_choice] += reward
+        reward = (current_value - previous_value) - 0.01 + current_value / 90.
+        Q_value = Q_table[previous_grid][previous_choice]
+        Q_table[previous_grid][previous_choice] = 0.9 * Q_value + 0.1 * reward
 
     if ((heading, distance) not in Q_table):
         yaw_choice = np.random.choice(yaw_actions)
@@ -68,9 +69,11 @@ def Q_learning(sphere_center, Q_table):
     if (yaw_choice, vel_choice) not in Q_table[(heading, distance)]:
         Q_table[(heading, distance)][(yaw_choice, vel_choice)] = 0.
     Q_table['previous_value'] = current_value
+    if current_value > 0.9:
+        Q_table['score'] += 1
     Q_table['previous_grid'] = (heading, distance)
     Q_table['previous_choice'] = (yaw_choice, vel_choice)
-    print "Epoch: {}, Position Value: {:.04}, Expected Reward: {:.04}".format(epoch, current_value, expectation)
+    # print "Epoch: {}, Position Value: {:.04}, Expected Reward: {:.04}".format(epoch, current_value, expectation)
 
     return yaw_choice, vel_choice
 
@@ -103,6 +106,10 @@ def init_spheres():
         blue_Q_table = parse_dict(np.load('blue_agent.npy'))
         print "Loaded blue agent from file."
 
+    # Always set scores back to zero
+    red_Q_table['score'] = 0
+    blue_Q_table['score'] = 0
+
     sub_red_center = rospy.Subscriber('/red_sphere/center', Point, red_sphere, queue_size=1)
     sub_blue_center = rospy.Subscriber('/blue_sphere/center', Point, blue_sphere, queue_size=1)
     rospy.init_node('sphere_command', anonymous=True)
@@ -116,13 +123,15 @@ def init_spheres():
     rate = rospy.Rate(5) # Hz
     noise = 0.1
     while not rospy.is_shutdown():
+        print "Epoch: {}, Scores - Red: {}, Blue: {}".format(epoch, 
+            red_Q_table['score'], blue_Q_table['score'])
         pub_red_yaw.publish(red_yaw + noise * (np.random.random() - 0.5))
         pub_red_vel.publish(red_vel + noise * (np.random.random() - 0.5))
         pub_blue_yaw.publish(blue_yaw + noise * (np.random.random() - 0.5))
         pub_blue_vel.publish(blue_vel + noise * (np.random.random() - 0.5))
         rate.sleep()
         epoch += 1
-        if epoch >= red_Q_table['epochs'] + 2000:
+        if epoch >= red_Q_table['epochs'] + 10000:
             red_Q_table['epochs'] = epoch
             print red_Q_table['epochs']
             np.save('red_agent.npy', red_Q_table)
