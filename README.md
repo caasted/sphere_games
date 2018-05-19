@@ -4,7 +4,7 @@ ROS/Gazebo simulations of sphere robots for reinforcement learning activities an
 Designed in Ubuntu 16.04 using ROS Kinetic and Gazebo 7.
 
 ## King of the Hill - Proof of Concept
-Moved to /sphere_games/koth_poc
+Moved to /sphere_games/proof_of_concept
 
 ## ROS/JavaScript/NodeJS Communication for Sphero SPRK+
 /sphere_games/ros_comms
