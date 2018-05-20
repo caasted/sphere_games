@@ -53,7 +53,7 @@ def Q_learning(sphere_center, Q_table, goal):
         previous_value = Q_table['previous_value']
         previous_grid = Q_table['previous_grid']
         previous_choice = Q_table['previous_choice']
-        reward = (current_value - previous_value) - 0.01 + current_value / 90.
+        reward = current_value - previous_value
         Q_value = Q_table[previous_grid][previous_choice]
         Q_table[previous_grid][previous_choice] = 0.9 * Q_value + 0.1 * reward
 
