@@ -12,3 +12,6 @@ Moved to /sphere_games/proof_of_concept
 ## King of the Hill - 1 vs. 1
 /sphere_games/koth_1v1
 
+## Capture the Flag - 1 vs. 1
+/sphere_games/ctf_1v1
+
