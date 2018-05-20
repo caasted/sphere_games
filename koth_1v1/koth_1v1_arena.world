@@ -82,7 +82,7 @@
     </spherical_coordinates>
     <model name='the_hill'>
       <link name='link'>
-        <pose frame=''>0 0 0.0025 0 0 0</pose>
+        <pose frame=''>0 0 0.0005 0 0 0</pose>
         <inertial>
           <mass>0.000524852</mass>
           <inertia>
@@ -93,7 +93,7 @@
             <iyz>0</iyz>
             <izz>4.78604e-06</izz>
           </inertia>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+          <pose frame=''>0 0 0 0 0 0</pose>
         </inertial>
         <self_collide>0</self_collide>
         <kinematic>0</kinematic>
@@ -101,7 +101,7 @@
           <geometry>
             <cylinder>
               <radius>0.1</radius>
-              <length>0.005</length>
+              <length>0.001</length>
             </cylinder>
           </geometry>
           <material>
@@ -125,7 +125,7 @@
           <geometry>
             <cylinder>
               <radius>0.1</radius>
-              <length>0.005</length>
+              <length>0.001</length>
             </cylinder>
           </geometry>
         </collision>
@@ -393,10 +393,10 @@
         </link>
       </model>
       <model name='the_hill'>
-        <pose frame=''>0 0 0.0025 0 0 0</pose>
+        <pose frame=''>0 0 0.0005 0 0 0</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose frame=''>-1e-06 0 0 0 0 0</pose>
+          <pose frame=''>0 0 0.0005 0 0 0</pose>
           <velocity>0 0 0 0 0 0</velocity>
           <acceleration>0 0 0 0 0 0</acceleration>
           <wrench>0 0 0 0 0 0</wrench>
