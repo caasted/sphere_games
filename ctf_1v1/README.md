@@ -58,3 +58,7 @@ python two_agent_Q-learning.py
 
 The red and blue spheres will both attempt to reach the other teams 'flag' and return to their own base as quickly as possible.
 
+## Time Lapse Video
+[![Two Q-learning Agents Competing](https://i.ytimg.com/vi/5DCCSJ7Hti4/hqdefault.jpg?sqp=-oaymwEXCPYBEIoBSFryq4qpAwkIARUAAIhCGAE=&rs=AOn4CLA_Evp4pugiZlQdgnvR7NOipEjVvA)](https://www.youtube.com/watch?v=5DCCSJ7Hti4)
+
+
