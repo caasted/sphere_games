@@ -58,3 +58,5 @@ python two_agent_Q-learning.py
 
 The red and blue spheres will both learn to maximize their time spent on the green hill at the center of the arena. Each agent earns one point for each epoch that it is located on top of the hill at the start of the epoch.
 
+## Time Lapse Video
+[![Two Q-learning Agents Competing](https://i.ytimg.com/vi/Fv_0XIlpNwg/hqdefault.jpg?sqp=-oaymwEXCPYBEIoBSFryq4qpAwkIARUAAIhCGAE=&rs=AOn4CLA4ueJ0rm7clw6f4g1_ASZKkvRsOQ)](https://www.youtube.com/watch?v=Fv_0XIlpNwg)
