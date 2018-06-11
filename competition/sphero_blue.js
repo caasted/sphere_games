@@ -4,7 +4,7 @@ const sphero = require('/usr/lib/node_modules/sphero');
 const rosnodejs = require('/usr/lib/node_modules/rosnodejs');
 const std_msgs = rosnodejs.require('std_msgs').msg;
 
-var orb = sphero("D6:DA:83:63:D0:2B");
+var orb = sphero("E7:D7:34:B0:4B:DB");
 
 orb.connect();
 orb.color('#000020');
