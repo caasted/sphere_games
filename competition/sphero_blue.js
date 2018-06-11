@@ -7,10 +7,10 @@ const std_msgs = rosnodejs.require('std_msgs').msg;
 var orb = sphero("D6:DA:83:63:D0:2B");
 
 orb.connect();
+orb.color('#000020');
 
 function listener() {
     rosnodejs.initNode('/blue_sphero/cmd')
-    orb.color('#000020');
         .then((rosNode) => {
             let sub = rosNode.subscribe('/blue_sphero/cmd', std_msgs.String,
                 (data) => {

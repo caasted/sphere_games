@@ -10,7 +10,6 @@ orb.connect();
 
 function listener() {
     rosnodejs.initNode('/red_sphero/cmd')
-    orb.color('#200000');
         .then((rosNode) => {
             let sub = rosNode.subscribe('/red_sphero/cmd', std_msgs.String,
                 (data) => {
@@ -24,6 +23,7 @@ function listener() {
 }
 
 if (require.main === module) {
+    orb.color('#200000');
     listener();
 }
 

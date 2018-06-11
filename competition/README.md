@@ -68,7 +68,7 @@ sudo setcap cap_net_raw+eip $(eval readlink -f `which node`)
 
 On each computer:
 ```
-cd [SPHERE_GAMES_REPO_PATH]/ros_comms/
+cd [SPHERE_GAMES_REPO_PATH]/competition/
 ```
 
 Next, on the Raspberry Pi, modify line 7 of "sphero_command.js" to match the Bluetooth device ID of the Sphero SPRK+ paired to the Raspberry Pi. Then run:
