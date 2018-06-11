@@ -104,6 +104,7 @@ python red_player.py
 ```
 
 On the Workstation:
+```
 cd [path_to_sphere_games]/competition
 python display_host.py
 ```
