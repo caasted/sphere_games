@@ -7,6 +7,7 @@ const std_msgs = rosnodejs.require('std_msgs').msg;
 var orb = sphero("D6:DA:83:63:D0:2B");
 
 orb.connect();
+orb.color('#200000');
 
 function listener() {
     rosnodejs.initNode('/red_sphero/cmd')
@@ -23,7 +24,6 @@ function listener() {
 }
 
 if (require.main === module) {
-    orb.color('#200000');
     listener();
 }
 
