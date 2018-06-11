@@ -5,8 +5,6 @@ import cv2
 from sensor_msgs.msg import CompressedImage
 
 def receive_image(image_data):
-    global red_center, blue_center, counter
-
     # print "Received image: {}".format(image_data.format)
     image_array = np.fromstring(image_data.data, np.uint8)
     cv2_image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)

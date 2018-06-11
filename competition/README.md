@@ -81,4 +81,36 @@ Next, on the Workstation, modify line 7 of "sphero_command.js" to match the Blue
 node sphero_blue.js
 ```
 
+On both host computers:
+```
+cd
+sudo apt install virtualenv python-opencv
+mkdir python2_env
+virtualenv python2_env
+source python2_env/bin/activate
+pip install numpy pyyaml rospkg catkin_pkg
+```
+
+On the Raspberry Pi:
+```
+cd [path_to_sphere_games]/competition
+python camera_host.py
+```
+
+In a second window:
+```
+cd [path_to_sphere_games]/competition
+python red_player.py
+```
+
+On the Workstation:
+cd [path_to_sphere_games]/competition
+python display_host.py
+```
+
+In a second window:
+```
+cd [path_to_sphere_games]/competition
+python blue_player.py
+```
 
