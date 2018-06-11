@@ -25,7 +25,7 @@ def goto_center():
             delta_y = 480 - red_center.y
             distance = np.sqrt(delta_x ** 2 + delta_y ** 2)
             heading = int(180 * np.arctan2(delta_y, delta_x) / np.pi)
-            heading -= 150
+            heading += 135
             while heading > 360 or heading < 0:
                 if heading < 0:
                     heading += 360
@@ -36,7 +36,7 @@ def goto_center():
             speed = 0
             heading = 0
 
-        sphero_cmd.publish(str(speed) + ',' + str(heading) + ',' + color)
+        sphero_cmd.publish(str(speed) + ',' + str(heading))
         rate.sleep()
 
     return

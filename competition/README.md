@@ -9,7 +9,7 @@ Install raspicam_node
 sudo apt install ros-kinetic-raspicam-node
 ```
 
-Set the Raspberry Pi to be the ROS Master:
+Set the Raspberry Pi to be the ROS Master by adding the following to ~/.bashrc
 ```
 export ROS_MASTER_URI=http://${HOSTNAME}:11311
 ```
@@ -21,7 +21,7 @@ roslaunch raspicam_node camerav2_1280x720.launch
 
 ## On the Display Host (Workstation w/ NVIDIA GPU)
 
-Execute the following command, inserting the hostname of the Camera Host Raspberry Pi:
+Add the following line to the ~/.bashrc to point to the Raspberry Pi for the ROS master. Insert the hostname of the Camera Host Raspberry Pi:
 ```
 export ROS_MASTER_URI=http://[Raspberry Pi Hostname]:11311
 ```
