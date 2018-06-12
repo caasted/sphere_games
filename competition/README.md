@@ -66,7 +66,7 @@ Press ```Control-C``` to exit and then the following command to correct it:
 sudo setcap cap_net_raw+eip $(eval readlink -f `which node`)
 ```
 
-On each computer:
+On both computers:
 ```
 cd [SPHERE_GAMES_REPO_PATH]/competition/
 ```
@@ -93,25 +93,29 @@ pip install numpy pyyaml rospkg catkin_pkg
 
 On the Raspberry Pi:
 ```
+source ~/python2_env/bin/activate
 cd [path_to_sphere_games]/competition
 python camera_host.py
 ```
 
-In a second window:
+On the Workstation:
 ```
+source ~/python2_env/bin/activate
 cd [path_to_sphere_games]/competition
 python red_player.py
 ```
 
-On the Workstation:
-```
-cd [path_to_sphere_games]/competition
-python display_host.py
-```
-
 In a second window:
 ```
+source ~/python2_env/bin/activate
 cd [path_to_sphere_games]/competition
 python blue_player.py
+```
+
+In a third window:
+```
+source ~/python2_env/bin/activate
+cd [path_to_sphere_games]/competition
+python display_host.py
 ```
 
