@@ -6,7 +6,8 @@ from sensor_msgs.msg import CompressedImage
 from geometry_msgs.msg import Point
 
 def find_spheros():
-
+    red_center = Point(0, 0, 0)
+    blue_center = Point(0, 0, 0)
     # sub_image = rospy.Subscriber('/raspicam_node/image/compressed', CompressedImage, find_spheros, queue_size=None)
 
     red_loc = rospy.Publisher('/red_sphero/center', Point, queue_size=1)
@@ -15,8 +16,8 @@ def find_spheros():
     rospy.init_node('camera_host', anonymous=True)
 
     cap = cv2.VideoCapture(0)
-    cap.set(3, 1280)
-    cap.set(4, 960)
+    cap.set(3, 640)
+    cap.set(4, 480)
 
     counter = 0
     rate = rospy.Rate(10) # Hz
@@ -40,14 +41,14 @@ def find_spheros():
         red_mask_2 = cv2.inRange(hsv, red_lower_2, red_upper_2)
     
         red_mask = red_mask_1 + red_mask_2
-        red_mask = cv2.erode(red_mask, None, iterations=5)
-        red_mask = cv2.dilate(red_mask, None, iterations=5)
+        red_mask = cv2.erode(red_mask, None, iterations=2)
+        red_mask = cv2.dilate(red_mask, None, iterations=2)
     
-        blue_lower = np.array([110, 150, 150])
+        blue_lower = np.array([110, 50, 50])
         blue_upper = np.array([120, 255, 255])
         blue_mask = cv2.inRange(hsv, blue_lower, blue_upper)
-        blue_mask = cv2.erode(blue_mask, None, iterations=5)
-        blue_mask = cv2.dilate(blue_mask, None, iterations=5)
+        blue_mask = cv2.erode(blue_mask, None, iterations=2)
+        blue_mask = cv2.dilate(blue_mask, None, iterations=2)
     
         red_contours = cv2.findContours(red_mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
         if len(red_contours) > 0:

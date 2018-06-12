@@ -21,11 +21,11 @@ def goto_center():
     rate = rospy.Rate(10) # Hz
     while not rospy.is_shutdown():
         if blue_center != None:
-            delta_x = 640 - blue_center.x
-            delta_y = 480 - blue_center.y
+            delta_x = 320 - blue_center.x
+            delta_y = 240 - blue_center.y
             distance = np.sqrt(delta_x ** 2 + delta_y ** 2)
             heading = int(180 * np.arctan2(delta_y, delta_x) / np.pi)
-            heading += 0
+            heading += 225
             while heading > 360 or heading < 0:
                 if heading < 0:
                     heading += 360
