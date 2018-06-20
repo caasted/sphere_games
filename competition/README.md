@@ -84,11 +84,6 @@ mkdir python2_env
 virtualenv python2_env
 source python2_env/bin/activate
 pip install numpy pyyaml rospkg catkin_pkg
-```
-
-On the Workstation:
-```
-source ~/python2_env/bin/activate
 cd [path_to_sphere_games]/competition
 python red_player.py
 ```
