@@ -18,14 +18,14 @@ def goto_center():
 
     sub_red_center = rospy.Subscriber('/red_sphero/center', Point, red_sphere, queue_size=1)
 
-    rate = rospy.Rate(5) # Hz
+    rate = rospy.Rate(10) # Hz
     while not rospy.is_shutdown():
         if red_center != None:
-            delta_x = 640 - red_center.x
-            delta_y = 480 - red_center.y
+            delta_x = 320 - red_center.x
+            delta_y = 240 - red_center.y
             distance = np.sqrt(delta_x ** 2 + delta_y ** 2)
             heading = int(180 * np.arctan2(delta_y, delta_x) / np.pi)
-            heading -= 115
+            heading += 180
             while heading > 360 or heading < 0:
                 if heading < 0:
                     heading += 360

@@ -107,3 +107,4 @@ cd [path_to_sphere_games]/competition
 python display_host.py
 ```
 
+[![Simple Sphero Control](https://i.ytimg.com/vi/IAiG6BaiNmo/hqdefault.jpg?sqp=-oaymwEXCPYBEIoBSFryq4qpAwkIARUAAIhCGAE=&rs=AOn4CLA4ZfHxRKWY5AfwmPVNvqGPA7LZTA)](https://www.youtube.com/watch?v=IAiG6BaiNmo)
