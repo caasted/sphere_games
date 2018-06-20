@@ -2,12 +2,7 @@
 
 ## On the Camera Host (Raspberry Pi 3 B+ w/ Camera Module v2)
 
-Follow build instructions at https://github.com/UbiquityRobotics/raspicam_node and add their repositories using the steps at https://packages.ubiquityrobotics.com/
-
-Install raspicam_node
-```
-sudo apt install ros-kinetic-raspicam-node
-```
+Install Raspbian, ROS, and follow build instructions at https://github.com/UbiquityRobotics/raspicam_node
 
 Set the Raspberry Pi to be the ROS Master by adding the following to ~/.bashrc
 ```
@@ -81,7 +76,7 @@ Next, on the Workstation, modify line 7 of "sphero_command.js" to match the Blue
 node sphero_blue.js
 ```
 
-On both host computers:
+On the workstation:
 ```
 cd
 sudo apt install virtualenv python-opencv
@@ -89,13 +84,6 @@ mkdir python2_env
 virtualenv python2_env
 source python2_env/bin/activate
 pip install numpy pyyaml rospkg catkin_pkg
-```
-
-On the Raspberry Pi:
-```
-source ~/python2_env/bin/activate
-cd [path_to_sphere_games]/competition
-python camera_host.py
 ```
 
 On the Workstation:
