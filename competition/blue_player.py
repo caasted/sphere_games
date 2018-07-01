@@ -2,7 +2,7 @@ import numpy as np
 import rospy
 
 import std_msgs.msg
-from geometry_msgs.msg import Point
+from geometry_msgs.msg import Point, Twist
 
 blue_center = None
 
@@ -11,10 +11,18 @@ def blue_sphere(sphere_center):
     blue_center = sphere_center
     return
 
+def yaw_vel_to_twist(yaw, vel): 
+    twist_msg = Twist() 
+    twist_msg.linear = Vector3(0, 0, 0) 
+    twist_msg.angular.x = np.cos(yaw) * vel 
+    twist_msg.angular.y = np.sin(yaw) * vel 
+    twist_msg.angular.z = 0 
+    return twist_msg
+
 def goto_center():
     rospy.init_node('blue_sphere_command', anonymous=True)
 
-    sphero_cmd = rospy.Publisher('/blue_sphero/cmd', std_msgs.msg.String, queue_size=1)
+    sphero_cmd = rospy.Publisher('/blue_sphero/twist_cmd', Twist, queue_size=1)
 
     sub_blue_center = rospy.Subscriber('/blue_sphero/center', Point, blue_sphere, queue_size=1)
 
@@ -36,7 +44,7 @@ def goto_center():
             speed = 0
             heading = 0
 
-        sphero_cmd.publish(str(speed) + ',' + str(heading))
+        sphero_cmd.publish(yaw_vel_to_twist(heading, speed))
         rate.sleep()
 
     return

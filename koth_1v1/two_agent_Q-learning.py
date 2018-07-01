@@ -4,12 +4,10 @@ import numpy as np
 import rospy
 
 import std_msgs.msg
-from geometry_msgs.msg import Point
+from geometry_msgs.msg import Point, Twist, Vector3
 
-red_yaw = 0.
-red_vel = 0.
-blue_yaw = 0.
-blue_vel = 0.
+red_twist = Twist()
+blue_twist = Twist()
 
 center_x = 1920 / 2.
 center_y = 1080 / 2.
@@ -77,14 +75,24 @@ def Q_learning(sphere_center, Q_table):
 
     return yaw_choice, vel_choice
 
+def yaw_vel_to_twist(yaw, vel):
+    twist_msg = Twist()
+    twist_msg.linear = Vector3(0, 0, 0)
+    twist_msg.angular.x = np.cos(yaw) * vel
+    twist_msg.angular.y = np.sin(yaw) * vel
+    twist_msg.angular.z = 0
+    return twist_msg
+
 def red_sphere(sphere_center):
-    global red_Q_table, red_yaw, red_vel
+    global red_Q_table, red_twist
     red_yaw, red_vel = Q_learning(sphere_center, red_Q_table)
+    red_twist = yaw_vel_to_twist(red_yaw, red_vel)
     return
 
 def blue_sphere(sphere_center):
-    global blue_Q_table, blue_yaw, blue_vel
+    global blue_Q_table, blue_twist
     blue_yaw, blue_vel = Q_learning(sphere_center, blue_Q_table)
+    blue_twist = yaw_vel_to_twist(blue_yaw, blue_vel)
     return
 
 def parse_dict(unformatted):
@@ -94,7 +102,7 @@ def parse_dict(unformatted):
     return formatted
 
 def init_spheres():
-    global epoch, red_Q_table, blue_Q_table
+    global epoch, red_Q_table, blue_Q_table, red_twist, blue_twist
     if os.path.isfile('red_agent.npy'):
         red_Q_table = parse_dict(np.load('red_agent.npy'))
         epoch = red_Q_table['epochs']
@@ -110,25 +118,22 @@ def init_spheres():
     red_Q_table['score'] = 0
     blue_Q_table['score'] = 0
 
-    sub_red_center = rospy.Subscriber('/red_sphere/center', Point, red_sphere, queue_size=1)
-    sub_blue_center = rospy.Subscriber('/blue_sphere/center', Point, blue_sphere, queue_size=1)
+    sub_red_center = rospy.Subscriber('/red_sphero/center', Point, red_sphere, queue_size=1)
+    sub_blue_center = rospy.Subscriber('/blue_sphero/center', Point, blue_sphere, queue_size=1)
     rospy.init_node('sphere_command', anonymous=True)
 
-    pub_red_vel = rospy.Publisher('/red_sphere/vel_cmd', std_msgs.msg.Float32, queue_size=1)
-    pub_red_yaw = rospy.Publisher('/red_sphere/yaw_cmd', std_msgs.msg.Float32, queue_size=1)
-    
-    pub_blue_vel = rospy.Publisher('/blue_sphere/vel_cmd', std_msgs.msg.Float32, queue_size=1)
-    pub_blue_yaw = rospy.Publisher('/blue_sphere/yaw_cmd', std_msgs.msg.Float32, queue_size=1)
-    
-    rate = rospy.Rate(5) # Hz
+    pub_red_twist = rospy.Publisher('/red_sphero/twist_cmd', Twist, queue_size=1)
+    pub_blue_twist = rospy.Publisher('/blue_sphero/twist_cmd', Twist, queue_size=1)
+
+    rate = rospy.Rate(10) # Hz
     noise = 0.1
     while not rospy.is_shutdown():
         print "Epoch: {}, Scores - Red: {}, Blue: {}".format(epoch, 
             red_Q_table['score'], blue_Q_table['score'])
-        pub_red_yaw.publish(red_yaw + noise * (np.random.random() - 0.5))
-        pub_red_vel.publish(red_vel + noise * (np.random.random() - 0.5))
-        pub_blue_yaw.publish(blue_yaw + noise * (np.random.random() - 0.5))
-        pub_blue_vel.publish(blue_vel + noise * (np.random.random() - 0.5))
+
+        pub_red_twist.publish(red_twist)
+        pub_blue_twist.publish(blue_twist)
+
         rate.sleep()
         epoch += 1
         if epoch >= red_Q_table['epochs'] + 10000:

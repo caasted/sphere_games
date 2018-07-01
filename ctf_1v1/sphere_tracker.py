@@ -49,27 +49,27 @@ def receive_image(image_data):
         blue_M = cv2.moments(max(blue_contours, key=cv2.contourArea))
         blue_center = Point(int(blue_M['m10'] / blue_M['m00']), int(blue_M['m01'] / blue_M['m00']), 0)
 
-    print red_center
-    print blue_center
+    # counter += 1
     # if counter % 5 == 0:
     #     cv2.imwrite('time_lapse/{0:08d}.png'.format(counter), cv2_image)
-    counter += 1
     # cv2.imshow('cv2_image', cv2_image)
     # cv2.waitKey(2)
     return
 
 def pub_sub_init():
-    pub_red_center = rospy.Publisher('/red_sphere/center', Point, queue_size=1)
-    pub_blue_center = rospy.Publisher('/blue_sphere/center', Point, queue_size=1)
+    pub_red_center = rospy.Publisher('/red_sphero/center', Point, queue_size=1)
+    pub_blue_center = rospy.Publisher('/blue_sphero/center', Point, queue_size=1)
 
     sub_image = rospy.Subscriber('/camera/rgb/image_raw/compressed', CompressedImage, receive_image, queue_size=1)
 
     rospy.init_node('sphere_tracker', anonymous=True)
 
-    rate = rospy.Rate(5) # Hz
+    rate = rospy.Rate(10) # Hz
     while not rospy.is_shutdown():
         pub_red_center.publish(red_center)
         pub_blue_center.publish(blue_center)
+        print("Red: [{}, {}]".format(red_center.x, red_center.y))
+        print("Blue: [{}, {}]".format(blue_center.x, blue_center.y))
         rate.sleep()
         
 if __name__ == '__main__':

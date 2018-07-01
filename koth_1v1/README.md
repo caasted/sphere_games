@@ -9,7 +9,7 @@ Designed in Ubuntu 16.04 using ROS Kinetic and Gazebo 7.
 Make sure the following commands have been added to your .bashrc file or ran in the terminal used to launch rosrun:
 ```
 source /opt/ros/kinetic/setup.bash
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:[INSERT_PATH_TO_REPO]/koth_1v1/build
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:[INSERT_PATH_TO_REPO]/plugins/build
 ```
 
 Create and configure a virtual environment for managing Python packages:
@@ -25,7 +25,7 @@ pip install numpy pyyaml rospkg catkin_pkg
 ## Build
 In a terminal, 
 ```
-cd [REPO_PATH]/koth_1v1/
+cd [REPO_PATH]/plugins/
 mkdir build
 cd build
 cmake ../
