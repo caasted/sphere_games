@@ -15,8 +15,10 @@ function listener() {
             let sub = rosNode.subscribe('/red_sphero/twist_cmd', twist,
                 (angular) => {
                     rosnodejs.log.info('Setting options: [' + angular + ']');
-                    var speed = Math.sqrt(angular.x ^ 2 + angular.y ^ 2);
+                    var speed = Math.sqrt(Math.pow(angular.x, 2) + Math.pow(angular.y, 2));
                     var heading = Math.atan2(angular.y, angular.x);
+                    console.log(speed);
+                    console.log(heading);
                     orb.roll(speed, heading);
                 }
             )

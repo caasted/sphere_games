@@ -2,7 +2,7 @@ import numpy as np
 import rospy
 
 import std_msgs.msg
-from geometry_msgs.msg import Point, Twist
+from geometry_msgs.msg import Point, Twist, Vector3
 
 blue_center = None
 

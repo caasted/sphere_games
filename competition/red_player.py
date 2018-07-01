@@ -1,7 +1,7 @@
 import numpy as np
 import rospy
 
-from geometry_msgs.msg import Point, Twist
+from geometry_msgs.msg import Point, Twist, Vector3
 
 red_center = None
 
