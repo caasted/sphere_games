@@ -33,7 +33,7 @@ def goto_center():
             delta_y = 480 - blue_center.y
             distance = np.sqrt(delta_x ** 2 + delta_y ** 2)
             heading = int(180 * np.arctan2(delta_y, delta_x) / np.pi)
-            heading += 225
+            heading += 45
             while heading > 360 or heading < 0:
                 if heading < 0:
                     heading += 360

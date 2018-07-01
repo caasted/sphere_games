@@ -20,6 +20,7 @@ function listener() {
                     console.log(speed);
                     console.log(heading);
                     orb.roll(speed, heading);
+                    orb.color('#200000');
                 }
             )
         });
