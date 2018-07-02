@@ -525,14 +525,14 @@
     </state>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose frame=''>0.85 -0.85 1 0 0.785 2.355</pose>
+        <pose frame=''>0 0 2 2.54213 1.57079 2.54213</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
     </gui>
     <model name='camera'>
       <static>true</static>
-      <pose frame=''>0 0 2 0 1.57 0</pose>
+      <pose frame=''>0.85 -0.85 1 0 0.785 2.355</pose>
       <link name='link'>
         <inertial>
           <mass>0.1</mass>

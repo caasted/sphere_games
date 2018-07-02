@@ -16,7 +16,9 @@ function listener() {
                 (data) => {
                     rosnodejs.log.info('Setting options: [' + data.angular.x + ', ' + data.angular.y + ']');
                     var speed = Math.sqrt(Math.pow(data.angular.x, 2) + Math.pow(data.angular.y, 2));
+                    speed = int(5 * speed) + 20;
                     var heading = Math.atan2(data.angular.y, data.angular.x);
+                    heading = int(180 * heading / Math.pi);
                     orb.roll(speed, heading);
                     orb.color('#000020');
                 }

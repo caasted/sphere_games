@@ -100,7 +100,7 @@
         <visual name='visual'>
           <geometry>
             <cylinder>
-              <radius>0.1</radius>
+              <radius>0.06</radius>
               <length>0.001</length>
             </cylinder>
           </geometry>
@@ -124,7 +124,7 @@
           <pose frame=''>0 0 0 0 0 0</pose>
           <geometry>
             <cylinder>
-              <radius>0.1</radius>
+              <radius>0.06</radius>
               <length>0.001</length>
             </cylinder>
           </geometry>

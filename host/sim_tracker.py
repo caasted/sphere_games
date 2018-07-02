@@ -1,19 +1,34 @@
+import time
+
 import numpy as np
 import rospy
 import cv2
 
+from std_msgs.msg import Bool
 from sensor_msgs.msg import CompressedImage
 from geometry_msgs.msg import Point
 
+# Capture the Flag base configuration
+# red_base = Point(1353, 147, 0)
+# blue_base = Point(567, 933, 0)
+# King of the Hill base configuration
+red_base = Point(960, 540, 0)
+blue_base = Point(960, 540, 0)
+
 red_center = Point(0, 0, 0)
 blue_center = Point(0, 0, 0)
+red_flag = False
+blue_flag = False
+red_score = 0
+blue_score = 0
 
 counter = 0
+
+start = time.time()
 
 def receive_image(image_data):
     global red_center, blue_center, counter
 
-    # print "Received image: {}".format(image_data.format)
     image_array = np.fromstring(image_data.data, np.uint8)
     cv2_image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
 
@@ -56,9 +71,50 @@ def receive_image(image_data):
     # cv2.waitKey(2)
     return
 
+# Scoring logic
+def host():
+    global red_center, blue_center, red_base, blue_base
+    global red_flag, blue_flag, red_score, blue_score
+
+    if red_flag != False:
+        distance = np.sqrt((red_center.x - red_base.x) ** 2 + 
+                           (red_center.y - red_base.y) ** 2)
+        if distance < 70:
+            red_score += 1
+            red_flag = False
+            blue_flag = False
+    else:
+        distance = np.sqrt((red_center.x - blue_base.x) ** 2 + 
+                           (red_center.y - blue_base.y) ** 2)
+        if distance < 70:
+            red_flag = True
+
+    if blue_flag != False:
+        distance = np.sqrt((blue_center.x - blue_base.x) ** 2 + 
+                           (blue_center.y - blue_base.y) ** 2)
+        if distance < 70:
+            blue_score += 1
+            red_flag = False
+            blue_flag = False
+    else:
+        distance = np.sqrt((blue_center.x - red_base.x) ** 2 + 
+                           (blue_center.y - red_base.y) ** 2)
+        if distance < 70:
+            blue_flag = True
+
+    return
+
 def pub_sub_init():
+    global red_flag, blue_flag, red_score, blue_score
+
     pub_red_center = rospy.Publisher('/red_sphero/center', Point, queue_size=1)
     pub_blue_center = rospy.Publisher('/blue_sphero/center', Point, queue_size=1)
+    pub_red_base = rospy.Publisher('/red_sphero/base', Point, queue_size=1)
+    pub_blue_base = rospy.Publisher('/blue_sphero/base', Point, queue_size=1)
+    pub_red_flag = rospy.Publisher('/red_sphero/flag', Bool, queue_size=1)
+    pub_blue_flag = rospy.Publisher('/blue_sphero/flag', Bool, queue_size=1)
+
+    pub_game_over = rospy.Publisher('/game_over', Bool, queue_size=1)
 
     sub_image = rospy.Subscriber('/camera/rgb/image_raw/compressed', CompressedImage, receive_image, queue_size=1)
 
@@ -66,12 +122,36 @@ def pub_sub_init():
 
     rate = rospy.Rate(10) # Hz
     while not rospy.is_shutdown():
+        host()
+
         pub_red_center.publish(red_center)
         pub_blue_center.publish(blue_center)
-        print("Red: [{}, {}]".format(red_center.x, red_center.y))
-        print("Blue: [{}, {}]".format(blue_center.x, blue_center.y))
+        pub_red_base.publish(red_base)
+        pub_blue_base.publish(blue_base)
+        pub_red_flag.publish(red_flag)
+        pub_blue_flag.publish(blue_flag)
+        pub_game_over.publish(False)
+
+        print("Red: [{}, {}], [{}, {}]".format(red_center.x, red_center.y, 
+            red_flag, red_score))
+        print("Blue: [{}, {}], [{}, {}]".format(blue_center.x, blue_center.y, 
+            blue_flag, blue_score))
+
+        if time.time() - start > 300:
+            pub_game_over.publish(True)
+            break
+
         rate.sleep()
-        
+
+    if blue_score > red_score:
+        print("Winner: Blue Team")
+    elif blue_score < red_score:
+        print("Winner: Red Team")
+    else:
+        print("Draw!")
+    print("Final Score - Red: {}, Blue: {}".format(red_score, blue_score))
+    return
+
 if __name__ == '__main__':
     try:
         pub_sub_init()
