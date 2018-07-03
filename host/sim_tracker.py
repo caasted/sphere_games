@@ -37,21 +37,20 @@ def receive_image(image_data):
     image_array = np.fromstring(image_data.data, np.uint8)
     cv2_image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
 
+    # Mask by hue and find center
     hsv = cv2.cvtColor(cv2_image, cv2.COLOR_BGR2HSV)
 
     red_lower_1 = np.array([0, 50, 50])
     red_upper_1 = np.array([int(1.0 * 180. / 6.), 255, 255])
     red_mask_1 = cv2.inRange(hsv, red_lower_1, red_upper_1)
-    red_mask_1 = cv2.erode(red_mask_1, None, iterations=2)
-    red_mask_1 = cv2.dilate(red_mask_1, None, iterations=2)
 
     red_lower_2 = np.array([int(5.5 * 180. / 6.), 50, 50])
     red_upper_2 = np.array([255, 255, 255])
     red_mask_2 = cv2.inRange(hsv, red_lower_2, red_upper_2)
-    red_mask_2 = cv2.erode(red_mask_2, None, iterations=2)
-    red_mask_2 = cv2.dilate(red_mask_2, None, iterations=2)
 
     red_mask = red_mask_1 + red_mask_2
+    red_mask = cv2.erode(red_mask, None, iterations=2)
+    red_mask = cv2.dilate(red_mask, None, iterations=2)
 
     blue_lower = np.array([int(3.0 * 180. / 6.), 50, 50])
     blue_upper = np.array([int(4.5 * 180. / 6.), 255, 255])
@@ -128,7 +127,7 @@ def host():
     return
 
 def pub_sub_init():
-    global red_flag, blue_flag, red_score, blue_score
+    global red_center, blue_center, red_flag, blue_flag, red_score, blue_score
 
     pub_red_center = rospy.Publisher('/red_sphero/center', Point, queue_size=1)
     pub_blue_center = rospy.Publisher('/blue_sphero/center', Point, queue_size=1)

@@ -127,12 +127,12 @@ def Q_learning():
 # Init function
 def learning_agent():
     # Load any existing agent
-    global Q_table
+    global Q_table, game_over
     if os.path.isfile('red_agent.npy'):
         Q_table = parse_dict(np.load('red_agent.npy'))
-        print "Loaded red agent from file."
+        print("Loaded red agent from file.")
     else:
-        print "New agent started."
+        print("New agent started.")
 
     # Setup ROS message handling
     rospy.init_node('red_agent', anonymous=True)
@@ -154,7 +154,7 @@ def learning_agent():
         rate.sleep()
 
     np.save('red_agent.npy', Q_table)
-    print "Game ended. Agent saved."
+    print("Game ended. Agent saved.")
     return
 
 if __name__ == '__main__':

@@ -9,6 +9,7 @@ blue_flag = False
 blue_base = Point()
 red_base = Point()
 blue_twist = Twist()
+game_over = False
 
 # Helper functions
 def set_center(sphere_center):
@@ -19,6 +20,11 @@ def set_center(sphere_center):
 def set_flag(flag_status):
     global blue_flag
     blue_flag = flag_status.data
+    return
+
+def set_game_over(game_state):
+    global game_over
+    game_over = game_state.data
     return
 
 def set_blue_base(base):
@@ -71,6 +77,7 @@ def proportional_control():
 
 # Init function
 def simple_agent():
+    global game_over
     # Setup ROS message handling
     rospy.init_node('blue_agent', anonymous=True)
 
@@ -79,13 +86,17 @@ def simple_agent():
     sub_blue_flag = rospy.Subscriber('/blue_sphero/flag', Bool, set_flag, queue_size=1)
     sub_blue_base = rospy.Subscriber('/blue_sphero/base', Point, set_blue_base, queue_size=1)
     sub_red_base = rospy.Subscriber('/red_sphero/base', Point, set_red_base, queue_size=1)
+    sub_game_over = rospy.Subscriber('/game_over', Bool, set_game_over, queue_size=1)
 
     # Agent control loop
     rate = rospy.Rate(10) # Hz
     while not rospy.is_shutdown():
         proportional_control()
         pub_blue_cmd.publish(blue_twist)
+        if game_over != False:
+            break
         rate.sleep()
+    print("Game ended. No agent to save.")
     return
 
 if __name__ == '__main__':
