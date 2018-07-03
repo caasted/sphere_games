@@ -42,10 +42,11 @@ In a second terminal,
 cd [REPO_PATH]/arenas/
 source /usr/share/gazebo/setup.sh
 ```
+King of the Hill:
 ```
 rosrun gazebo_ros gazebo koth_1v1_arena.world
 ```
-or
+or Capture the Flag:
 ```
 rosrun gazebo_ros gazebo ctf_1v1_arena.world
 ```
@@ -54,7 +55,14 @@ In a third terminal, run the simulation tracker python script:
 ```
 source ~/python2_env/bin/activate
 cd [repo_path]/host/
-python sim_tracker.py
+```
+King of the Hill:
+```
+python sim_tracker.py 0
+```
+or Capture the Flag:
+```
+python sim_tracker.py 1
 ```
 
 In a fourth terminal, run the reinforcement learning agent script:
@@ -68,6 +76,8 @@ In a fifth terminal, run the simple proportional control agent script:
 ```
 source ~/python2_env/bin/activate
 cd [repo_path]/agents/
+```
+```
 python blue_simple_agent.py
 ```
 

@@ -9,12 +9,14 @@ from std_msgs.msg import Bool
 from sensor_msgs.msg import CompressedImage
 from geometry_msgs.msg import Point
 
-if len(sys.argv) > 1 and sys.argv[1] == 1:
+if len(sys.argv) > 1 and sys.argv[1] == '1':
     # Capture the Flag base configuration
+    print("Starting Capture the Flag")
     red_base = Point(1353, 147, 0)
     blue_base = Point(567, 933, 0)
 else:
     # King of the Hill base configuration
+    print("Starting King of the Hill")
     red_base = Point(960, 540, 0)
     blue_base = Point(960, 540, 0)
 
