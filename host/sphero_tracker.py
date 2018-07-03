@@ -17,8 +17,8 @@ if len(sys.argv) > 1 and sys.argv[1] == '1':
 else:
     # King of the Hill base configuration
     print("Starting King of the Hill")
-    red_base = Point(960, 540, 0)
-    blue_base = Point(960, 540, 0)
+    red_base = Point(640, 360, 0)
+    blue_base = Point(640, 360, 0)
 
 red_center = Point(0, 0, 0)
 blue_center = Point(0, 0, 0)

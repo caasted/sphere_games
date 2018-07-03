@@ -14,11 +14,13 @@ function listener() {
         .then((rosNode) => {
             let sub = rosNode.subscribe('/blue_sphero/twist_cmd', twist,
                 (data) => {
-                    rosnodejs.log.info('Setting options: [' + data.angular.x + ', ' + data.angular.y + ']');
                     var speed = Math.sqrt(Math.pow(data.angular.x, 2) + Math.pow(data.angular.y, 2));
                     speed = 5 * speed + 20;
                     var heading = Math.atan2(data.angular.y, data.angular.x);
-                    heading = 180 * heading / Math.pi;
+                    heading = -180 * heading / Math.PI;
+                    heading = heading + 730 // Adjust based on startup heading
+                    heading = heading % 360
+                    rosnodejs.log.info('Setting speed: ' + speed + ', heading: ' + heading);
                     orb.roll(speed, heading);
                     orb.color('#000020');
                 }
