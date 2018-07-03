@@ -1,3 +1,4 @@
+import sys
 import time
 
 import numpy as np
@@ -8,12 +9,14 @@ from std_msgs.msg import Bool
 from sensor_msgs.msg import CompressedImage
 from geometry_msgs.msg import Point
 
-# Capture the Flag base configuration
-# red_base = Point(1353, 147, 0)
-# blue_base = Point(567, 933, 0)
-# King of the Hill base configuration
-red_base = Point(960, 540, 0)
-blue_base = Point(960, 540, 0)
+if len(sys.argv) > 1 and sys.argv[1] == 1:
+    # Capture the Flag base configuration
+    red_base = Point(1353, 147, 0)
+    blue_base = Point(567, 933, 0)
+else:
+    # King of the Hill base configuration
+    red_base = Point(960, 540, 0)
+    blue_base = Point(960, 540, 0)
 
 red_center = Point(0, 0, 0)
 blue_center = Point(0, 0, 0)
@@ -75,33 +78,51 @@ def receive_image(image_data):
 def host():
     global red_center, blue_center, red_base, blue_base
     global red_flag, blue_flag, red_score, blue_score
+    red_at_away = False
+    red_at_home = False
+    blue_at_away = False
+    blue_at_home = False
 
     if red_flag != False:
         distance = np.sqrt((red_center.x - red_base.x) ** 2 + 
                            (red_center.y - red_base.y) ** 2)
         if distance < 70:
-            red_score += 1
-            red_flag = False
-            blue_flag = False
+            red_at_home = True
     else:
         distance = np.sqrt((red_center.x - blue_base.x) ** 2 + 
                            (red_center.y - blue_base.y) ** 2)
         if distance < 70:
-            red_flag = True
+            red_at_away = True
 
     if blue_flag != False:
         distance = np.sqrt((blue_center.x - blue_base.x) ** 2 + 
                            (blue_center.y - blue_base.y) ** 2)
         if distance < 70:
-            blue_score += 1
-            red_flag = False
-            blue_flag = False
+            blue_at_home = True
     else:
         distance = np.sqrt((blue_center.x - red_base.x) ** 2 + 
                            (blue_center.y - red_base.y) ** 2)
         if distance < 70:
-            blue_flag = True
+            blue_at_away = True
 
+    if red_at_home and blue_at_home:
+        red_score += 1
+        blue_score += 1
+        red_flag = False
+        blue_flag = False
+    elif red_at_home:
+        red_score += 1
+        red_flag = False
+        blue_flag = False
+    elif blue_at_home:
+        blue_score += 1
+        red_flag = False
+        blue_flag = False
+    else:
+        if red_at_away:
+            red_flag = True
+        if blue_at_away:
+            blue_flag = True
     return
 
 def pub_sub_init():
