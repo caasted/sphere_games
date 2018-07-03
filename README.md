@@ -164,7 +164,16 @@ On the workstation:
 ```
 source ~/python2_env/bin/activate
 cd [path_to_sphere_games]/host
-python sphero_tracker.py
+```
+
+King of the Hill:
+```
+python sphero_tracker.py 0
+```
+
+or Capture the Flag:
+```
+python sphero_tracker.py 1
 ```
 
 In a second window:
