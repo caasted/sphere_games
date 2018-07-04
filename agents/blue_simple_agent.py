@@ -68,7 +68,7 @@ def proportional_control():
         heading, distance = get_heading_and_distance()
         heading = -heading # Switch from camera to world coordinates
         # heading -= np.pi / 2 # Offset to calibrate heading
-        speed = distance / 100.
+        speed = distance / 200. + 8
     else:
         speed = 0
         heading = 0
@@ -89,7 +89,7 @@ def simple_agent():
     sub_game_over = rospy.Subscriber('/game_over', Bool, set_game_over, queue_size=1)
 
     # Agent control loop
-    rate = rospy.Rate(10) # Hz
+    rate = rospy.Rate(5) # Hz
     while not rospy.is_shutdown():
         proportional_control()
         pub_blue_cmd.publish(blue_twist)
