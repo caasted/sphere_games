@@ -154,6 +154,7 @@ def pub_sub_init():
         pub_blue_flag.publish(blue_flag)
         pub_game_over.publish(False)
 
+        print("Time: {} / 300".format(time.time() - start))
         print("Red: [{}, {}], [{}, {}]".format(red_center.x, red_center.y, 
             red_flag, red_score))
         print("Blue: [{}, {}], [{}, {}]".format(blue_center.x, blue_center.y, 

@@ -90,26 +90,27 @@ def host():
     blue_at_away = False
     blue_at_home = False
 
+    threshold = 100
     if red_flag != False:
         distance = np.sqrt((red_center.x - red_base.x) ** 2 +
                            (red_center.y - red_base.y) ** 2)
-        if distance < 70:
+        if distance < threshold:
             red_at_home = True
     else:
         distance = np.sqrt((red_center.x - blue_base.x) ** 2 +
                            (red_center.y - blue_base.y) ** 2)
-        if distance < 70:
+        if distance < threshold:
             red_at_away = True
 
     if blue_flag != False:
         distance = np.sqrt((blue_center.x - blue_base.x) ** 2 +
                            (blue_center.y - blue_base.y) ** 2)
-        if distance < 70:
+        if distance < threshold:
             blue_at_home = True
     else:
         distance = np.sqrt((blue_center.x - red_base.x) ** 2 +
                            (blue_center.y - red_base.y) ** 2)
-        if distance < 70:
+        if distance < threshold:
             blue_at_away = True
 
     if red_at_home and blue_at_home:
@@ -160,6 +161,7 @@ def pub_sub_init():
         pub_blue_flag.publish(blue_flag)
         pub_game_over.publish(False)
 
+        print("Time: {} / 300".format(time.time() - start))
         print("Red: [{}, {}], [{}, {}]".format(red_center.x, red_center.y,
             red_flag, red_score))
         print("Blue: [{}, {}], [{}, {}]".format(blue_center.x, blue_center.y,

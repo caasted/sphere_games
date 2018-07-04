@@ -14,8 +14,8 @@ game_over = False
 
 red_twist = Twist()
 Q_table = {}
-yaw_actions = np.array(list(range(8))) * np.pi / 4
-vel_actions = np.array(list(range(10, 18)))
+yaw_actions = np.array(list(range(4))) * np.pi / 2
+vel_actions = np.array(list(range(1, 3))) * 4
 
 # Helper functions
 def set_center(sphere_center):
@@ -85,7 +85,7 @@ def Q_learning():
         previous_value = Q_table['previous_value']
         previous_grid = Q_table['previous_grid']
         previous_choice = Q_table['previous_choice']
-        reward = (current_value - previous_value) - 0.001
+        reward = (current_value - previous_value) - 0.01
         Q_value = Q_table[previous_grid][previous_choice]
         Q_table[previous_grid][previous_choice] += reward
 
@@ -145,7 +145,7 @@ def learning_agent():
     sub_game_over = rospy.Subscriber('/game_over', Bool, set_game_over, queue_size=1)
 
     # Agent control loop
-    rate = rospy.Rate(10) # Hz
+    rate = rospy.Rate(2) # Hz
     while not rospy.is_shutdown():
         Q_learning()
         pub_red_cmd.publish(red_twist)

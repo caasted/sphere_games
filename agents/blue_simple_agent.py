@@ -10,6 +10,7 @@ blue_base = Point()
 red_base = Point()
 blue_twist = Twist()
 game_over = False
+accumulated_error = 0.
 
 # Helper functions
 def set_center(sphere_center):
@@ -62,13 +63,16 @@ def get_heading_and_distance():
 
 # Agent function
 def proportional_control():
-    global blue_twist
+    global blue_twist, accumulated_error
 
     if blue_center != None:
         heading, distance = get_heading_and_distance()
         heading = -heading # Switch from camera to world coordinates
-        # heading -= np.pi / 2 # Offset to calibrate heading
-        speed = distance / 200. + 8
+        if distance < 100:
+            accumulated_error = 0
+        else:
+            accumulated_error += distance
+        speed = distance / 100. + accumulated_error / 10000.
     else:
         speed = 0
         heading = 0
@@ -89,7 +93,7 @@ def simple_agent():
     sub_game_over = rospy.Subscriber('/game_over', Bool, set_game_over, queue_size=1)
 
     # Agent control loop
-    rate = rospy.Rate(5) # Hz
+    rate = rospy.Rate(2) # Hz
     while not rospy.is_shutdown():
         proportional_control()
         pub_blue_cmd.publish(blue_twist)
