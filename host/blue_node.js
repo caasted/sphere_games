@@ -14,8 +14,14 @@ function listener() {
         .then((rosNode) => {
             let sub = rosNode.subscribe('/blue_sphero/twist_cmd', twist,
                 (data) => {
+		    // Special code to reset Sphero internal heading
+                    if (data.linear.z == -1) {
+			orb.setHeading(0);
+			rosnodejs.log.info('Reset Sphero internal heading.');
+		    }
+
                     var speed = Math.sqrt(Math.pow(data.angular.x, 2) + Math.pow(data.angular.y, 2));
-                    speed = 5 * speed + 20;
+                    speed = 5 * speed;
                     var heading = Math.atan2(data.angular.y, data.angular.x);
                     heading = -180 * heading / Math.PI;
                     heading = heading + 730 // Adjust based on startup heading
