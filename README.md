@@ -19,7 +19,7 @@ sudo apt install virtualenv python-opencv
 mkdir python2_env
 virtualenv python2_env --python=python2.7
 source python2_env/bin/activate
-pip install numpy pyyaml rospkg catkin_pkg
+pip install numpy pyyaml rospkg catkin_pkg getkey
 ```
 
 # Simulation Instructions
@@ -155,12 +155,35 @@ Next, on the Raspberry Pi, modify line 7 of "red_node.js" to match the Bluetooth
 node red_node.js
 ```
 
+In a new terminal, calibrate the internal Sphero heading by launching the manual control script and controlling the Sphero with the arrow keys:
+```
+source ~/python2_env/bin/activate
+cd [path_to_sphere_games]/calibrate/
+python manual_control.py 1
+```
+```
+Controls:
+Up: Increase speed
+Down: Decrease speed
+Left: Rotate counterclockwise
+Right: Rotate clockwise
+'q': Set current heading to zero position for Sphero.
+```
+The zero heading position should be set to match the camera reference frame.
+
 Next, on the Workstation, modify line 7 of "blue_node.js" to match the Bluetooth device ID of the Sphero SPRK+ paired to the Workstation. Then run:
 ```
 node blue_node.js
 ```
 
-On the workstation:
+In a new terminal, calibrate the internal Sphero heading by launching the manual control script and controlling the Sphero with the arrow keys:
+```
+source ~/python2_env/bin/activate
+cd [path_to_sphere_games]/calibrate/
+python manual_control.py 0
+```
+
+In a new terminal on the workstation:
 ```
 source ~/python2_env/bin/activate
 cd [path_to_sphere_games]/host

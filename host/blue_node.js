@@ -24,8 +24,7 @@ function listener() {
                     speed = 5 * speed;
                     var heading = Math.atan2(data.angular.y, data.angular.x);
                     heading = -180 * heading / Math.PI;
-                    heading = heading + 730 // Adjust based on startup heading
-                    heading = heading % 360
+                    heading = (1080 + heading) % 360 // Ensure range [0, 360]
                     rosnodejs.log.info('Setting speed: ' + speed + ', heading: ' + heading);
                     orb.roll(speed, heading);
                     orb.color('#000020');
