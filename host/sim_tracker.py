@@ -12,8 +12,8 @@ from geometry_msgs.msg import Point
 if len(sys.argv) > 1 and sys.argv[1] == '1':
     # Capture the Flag base configuration
     print("Starting Capture the Flag")
-    red_base = Point(1353, 147, 0)
-    blue_base = Point(567, 933, 0)
+    red_base = Point(1400, 98, 0)
+    blue_base = Point(518, 979, 0)
 else:
     # King of the Hill base configuration
     print("Starting King of the Hill")
@@ -68,9 +68,9 @@ def receive_image(image_data):
         blue_M = cv2.moments(max(blue_contours, key=cv2.contourArea))
         blue_center = Point(int(blue_M['m10'] / blue_M['m00']), int(blue_M['m01'] / blue_M['m00']), 0)
 
-    # counter += 1
+    counter += 1
     # if counter % 5 == 0:
-    #     cv2.imwrite('time_lapse/{0:08d}.png'.format(counter), cv2_image)
+    cv2.imwrite('images/{0:08d}.png'.format(counter), cv2_image)
     # cv2.imshow('cv2_image', cv2_image)
     # cv2.waitKey(2)
     return
@@ -154,13 +154,13 @@ def pub_sub_init():
         pub_blue_flag.publish(blue_flag)
         pub_game_over.publish(False)
 
-        print("Time: {} / 300".format(time.time() - start))
+        print("Time: {} / 600".format(time.time() - start))
         print("Red: [{}, {}], [{}, {}]".format(red_center.x, red_center.y, 
             red_flag, red_score))
         print("Blue: [{}, {}], [{}, {}]".format(blue_center.x, blue_center.y, 
             blue_flag, blue_score))
 
-        if time.time() - start > 300:
+        if time.time() - start > 600:
             pub_game_over.publish(True)
             break
 

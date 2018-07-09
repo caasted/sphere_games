@@ -14,8 +14,8 @@ game_over = False
 
 red_twist = Twist()
 Q_table = {}
-yaw_actions = np.array(list(range(4))) * np.pi / 2
-vel_actions = np.array(list(range(1, 3))) * 4
+yaw_actions = np.array(list(range(8))) * np.pi / 4
+vel_actions = np.array(list(range(1, 2))) * 15 # One speed
 
 # Helper functions
 def set_center(sphere_center):
@@ -77,19 +77,20 @@ def Q_learning():
     expectation = 0.
 
     heading, distance = get_heading_and_distance()
-    current_value = -distance / 1200. # Scale to [0, ~-1]
+    current_value = 1 - distance / 1250. # Scale to [1, ~0]
     heading = int(4 * heading / np.pi)   # Convert to range(8)
-    distance = int(8 * distance / 1200.)  # Convert to range(8)
+    distance = int(8 * distance / 1250.)  # Convert to range(8)
 
     if 'previous_value' in Q_table:
         previous_value = Q_table['previous_value']
         previous_grid = Q_table['previous_grid']
         previous_choice = Q_table['previous_choice']
-        reward = (current_value - previous_value) - 0.01
+        reward = (current_value - previous_value) - 0.005
         Q_value = Q_table[previous_grid][previous_choice]
         Q_table[previous_grid][previous_choice] += reward
 
-    if ((heading, distance) not in Q_table):
+    if (np.random.random() < 0.2 
+        or (heading, distance) not in Q_table):
         yaw_choice = np.random.choice(yaw_actions)
         vel_choice = np.random.choice(vel_actions)
     else:
@@ -120,7 +121,6 @@ def Q_learning():
     print("Yaw: {}, Vel: {}, Value: {}".format(yaw_choice, vel_choice, 
         current_value))
     yaw_choice = -yaw_choice # Switch from camera to world coordinates
-    # yaw_choice += np.pi / 2 # Offset to calibrate heading
     red_twist = yaw_vel_to_twist(yaw_choice, vel_choice)
     return
 
@@ -128,8 +128,9 @@ def Q_learning():
 def learning_agent():
     # Load any existing agent
     global Q_table, game_over
-    if os.path.isfile('red_agent.npy'):
-        Q_table = parse_dict(np.load('red_agent.npy'))
+    agent_file = 'test_agent.npy'
+    if os.path.isfile(agent_file):
+        Q_table = parse_dict(np.load(agent_file))
         print("Loaded red agent from file.")
     else:
         print("New agent started.")
@@ -145,7 +146,7 @@ def learning_agent():
     sub_game_over = rospy.Subscriber('/game_over', Bool, set_game_over, queue_size=1)
 
     # Agent control loop
-    rate = rospy.Rate(2) # Hz
+    rate = rospy.Rate(5) # Hz
     while not rospy.is_shutdown():
         Q_learning()
         pub_red_cmd.publish(red_twist)
@@ -153,7 +154,7 @@ def learning_agent():
             break
         rate.sleep()
 
-    np.save('red_agent.npy', Q_table)
+    np.save(agent_file, Q_table)
     print("Game ended. Agent saved.")
     return
 
