@@ -41,13 +41,6 @@ In a second terminal,
 ```
 cd [REPO_PATH]/arenas/
 source /usr/share/gazebo/setup.sh
-```
-King of the Hill:
-```
-rosrun gazebo_ros gazebo koth_1v1_arena.world
-```
-or Capture the Flag:
-```
 rosrun gazebo_ros gazebo ctf_1v1_arena.world
 ```
 
@@ -55,13 +48,6 @@ In a third terminal, run the simulation tracker python script:
 ```
 source ~/python2_env/bin/activate
 cd [repo_path]/host/
-```
-King of the Hill:
-```
-python sim_tracker.py 1
-```
-or Capture the Flag:
-```
 python sim_tracker.py
 ```
 
@@ -187,15 +173,6 @@ In a new terminal on the workstation:
 ```
 source ~/python2_env/bin/activate
 cd [path_to_sphere_games]/host
-```
-
-King of the Hill:
-```
-python sphero_tracker.py 1
-```
-
-or Capture the Flag:
-```
 python sphero_tracker.py
 ```
 
