@@ -1,4 +1,3 @@
-import sys
 import time
 
 import numpy as np
@@ -9,16 +8,10 @@ from std_msgs.msg import Bool
 from sensor_msgs.msg import CompressedImage
 from geometry_msgs.msg import Point
 
-if len(sys.argv) > 1 and sys.argv[1] == '1':
-    # Capture the Flag base configuration
-    print("Starting Capture the Flag")
-    red_base = Point(1400, 98, 0)
-    blue_base = Point(518, 979, 0)
-else:
-    # King of the Hill base configuration
-    print("Starting King of the Hill")
-    red_base = Point(960, 540, 0)
-    blue_base = Point(960, 540, 0)
+# Capture the Flag base configuration
+print("Starting Capture the Flag")
+red_base = Point(1400, 98, 0)
+blue_base = Point(518, 979, 0)
 
 red_center = Point(0, 0, 0)
 blue_center = Point(0, 0, 0)
@@ -70,7 +63,7 @@ def receive_image(image_data):
 
     counter += 1
     # if counter % 5 == 0:
-    cv2.imwrite('images/{0:08d}.png'.format(counter), cv2_image)
+    # cv2.imwrite('images/{0:08d}.png'.format(counter), cv2_image)
     # cv2.imshow('cv2_image', cv2_image)
     # cv2.waitKey(2)
     return
@@ -154,13 +147,13 @@ def pub_sub_init():
         pub_blue_flag.publish(blue_flag)
         pub_game_over.publish(False)
 
-        print("Time: {} / 600".format(time.time() - start))
+        print("Time: {} / 300".format(time.time() - start))
         print("Red: [{}, {}], [{}, {}]".format(red_center.x, red_center.y, 
             red_flag, red_score))
         print("Blue: [{}, {}], [{}, {}]".format(blue_center.x, blue_center.y, 
             blue_flag, blue_score))
 
-        if time.time() - start > 600:
+        if time.time() - start > 300:
             pub_game_over.publish(True)
             break
 

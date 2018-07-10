@@ -58,11 +58,11 @@ cd [repo_path]/host/
 ```
 King of the Hill:
 ```
-python sim_tracker.py 0
+python sim_tracker.py 1
 ```
 or Capture the Flag:
 ```
-python sim_tracker.py 1
+python sim_tracker.py
 ```
 
 In a fourth terminal, run the reinforcement learning agent script:
@@ -191,12 +191,12 @@ cd [path_to_sphere_games]/host
 
 King of the Hill:
 ```
-python sphero_tracker.py 0
+python sphero_tracker.py 1
 ```
 
 or Capture the Flag:
 ```
-python sphero_tracker.py 1
+python sphero_tracker.py
 ```
 
 In a second window:

@@ -56,7 +56,7 @@ def get_heading_and_distance():
         # Have flag, go home
         target_x = blue_base.x
         target_y = blue_base.y
-    elif neutral_zone and not blue_flag:
+    elif not blue_flag and (neutral_zone != False):
         # Don't have flag, go to opponent's base
         target_x = red_base.x
         target_y = red_base.y
@@ -81,7 +81,7 @@ def get_heading_and_distance():
 def proportional_control():
     global blue_twist, accumulated_error
 
-    if blue_center != None:
+    if blue_center != Point():
         heading, distance = get_heading_and_distance()
         heading = -heading # Switch from camera to world coordinates
         if distance < 100:
