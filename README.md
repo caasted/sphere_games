@@ -62,8 +62,6 @@ In a fifth terminal, run the simple proportional control agent script:
 ```
 source ~/python2_env/bin/activate
 cd [repo_path]/agents/
-```
-```
 python blue_simple_agent.py
 ```
 
@@ -155,7 +153,7 @@ Left: Rotate counterclockwise
 Right: Rotate clockwise
 'q': Set current heading to zero position for Sphero.
 ```
-The zero heading position should be set to match the camera reference frame.
+The zero heading position should be set to match the camera reference frame (facing camera right).
 
 Next, on the Workstation, modify line 7 of "blue_node.js" to match the Bluetooth device ID of the Sphero SPRK+ paired to the Workstation. Then run:
 ```
