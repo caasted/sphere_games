@@ -80,7 +80,7 @@ export ROS_MASTER_URI=http://${HOSTNAME}:11311
 
 Launch the raspicam node:
 ```
-roslaunch raspicam_node camerav2_1280x720.launch
+roslaunch raspicam_node camerav2_1280x960.launch
 ```
 
 ## On the Display Host (Workstation w/ NVIDIA GPU)
