@@ -4,7 +4,7 @@ import numpy as np
 import rospy
 import cv2
 
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, Int16
 from sensor_msgs.msg import CompressedImage
 from geometry_msgs.msg import Point
 
@@ -128,6 +128,8 @@ def pub_sub_init():
     pub_blue_base = rospy.Publisher('/blue_sphero/base', Point, queue_size=1)
     pub_red_flag = rospy.Publisher('/red_sphero/flag', Bool, queue_size=1)
     pub_blue_flag = rospy.Publisher('/blue_sphero/flag', Bool, queue_size=1)
+    pub_red_score = rospy.Publisher('/red_sphero/score', Int16, queue_size=1)
+    pub_blue_score = rospy.Publisher('/blue_sphero/score', Int16, queue_size=1)
 
     pub_game_over = rospy.Publisher('/game_over', Bool, queue_size=1)
 
@@ -145,6 +147,8 @@ def pub_sub_init():
         pub_blue_base.publish(blue_base)
         pub_red_flag.publish(red_flag)
         pub_blue_flag.publish(blue_flag)
+        pub_red_score.publish(red_score)
+        pub_blue_score.publish(blue_score)
         pub_game_over.publish(False)
 
         print("Time: {} / 300".format(time.time() - start))
