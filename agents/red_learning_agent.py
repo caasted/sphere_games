@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 import rospy
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, Int16
 from geometry_msgs.msg import Twist, Point, Vector3
 
 # Global variables
@@ -11,6 +11,7 @@ red_flag = False
 red_base = Point()
 blue_base = Point()
 game_over = False
+game_state = 0
 
 red_twist = Twist()
 Q_table = {}
@@ -32,6 +33,15 @@ def set_game_over(game_state):
     global game_over
     game_over = game_state.data
     return
+
+
+def set_game_state(state):
+    global game_over, game_state
+    if(state.data == 2):
+        game_over = True
+        game_state = 2
+    else:
+        game_state = state.data
 
 def set_blue_base(base):
     global blue_base
@@ -127,7 +137,7 @@ def Q_learning():
 # Init function
 def learning_agent():
     # Load any existing agent
-    global Q_table, game_over
+    global Q_table, game_over, game_state
     agent_file = 'test_agent.npy'
     if os.path.isfile(agent_file):
         Q_table = parse_dict(np.load(agent_file))
@@ -144,14 +154,19 @@ def learning_agent():
     sub_blue_base = rospy.Subscriber('/blue_sphero/base', Point, set_blue_base, queue_size=1)
     sub_red_base = rospy.Subscriber('/red_sphero/base', Point, set_red_base, queue_size=1)
     sub_game_over = rospy.Subscriber('/game_over', Bool, set_game_over, queue_size=1)
+    sub_game_state = rospy.Subscriber('/arena/game_state', Int16, set_game_state, queue_size=1)
 
     # Agent control loop
     rate = rospy.Rate(5) # Hz
     while not rospy.is_shutdown():
-        Q_learning()
-        pub_red_cmd.publish(red_twist)
-        if game_over != False:
-            break
+
+        if(game_state == 0):
+            pub_red_cmd.publish(yaw_vel_to_twist(0, 0))
+        else:
+            Q_learning()
+            pub_red_cmd.publish(red_twist)
+            if game_over != False:
+                break
         rate.sleep()
 
     np.save(agent_file, Q_table)

@@ -1,6 +1,6 @@
 import numpy as np
 import rospy
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, Int16
 from geometry_msgs.msg import Point, Twist, Vector3
 
 # Global variables
@@ -10,6 +10,7 @@ blue_base = Point()
 red_base = Point()
 blue_twist = Twist()
 game_over = False
+game_state = 0
 accumulated_error = 0.
 neutral_zone = False
 
@@ -31,6 +32,14 @@ def set_game_over(game_state):
     global game_over
     game_over = game_state.data
     return
+
+def set_game_state(state):
+    global game_over, game_state
+    if(state.data == 2):
+        game_over = True
+        game_state = 2
+    else:
+        game_state = state.data
 
 def set_blue_base(base):
     global blue_base
@@ -79,7 +88,7 @@ def get_heading_and_distance():
 
 # Agent function
 def proportional_control():
-    global blue_twist, accumulated_error
+    global blue_twist, accumulated_error, game_state
 
     if blue_center != Point():
         heading, distance = get_heading_and_distance()
@@ -97,7 +106,7 @@ def proportional_control():
 
 # Init function
 def simple_agent():
-    global game_over
+    global game_over, game_state
     # Setup ROS message handling
     rospy.init_node('blue_agent', anonymous=True)
 
@@ -107,12 +116,17 @@ def simple_agent():
     sub_blue_base = rospy.Subscriber('/blue_sphero/base', Point, set_blue_base, queue_size=1)
     sub_red_base = rospy.Subscriber('/red_sphero/base', Point, set_red_base, queue_size=1)
     sub_game_over = rospy.Subscriber('/game_over', Bool, set_game_over, queue_size=1)
+    sub_game_state = rospy.Subscriber('/arena/game_state', Int16, set_game_state, queue_size=1)
 
     # Agent control loop
     rate = rospy.Rate(2) # Hz
     while not rospy.is_shutdown():
-        proportional_control()
-        pub_blue_cmd.publish(blue_twist)
+
+        if(game_state != 1):
+            pub_blue_cmd.publish(yaw_vel_to_twist(0, 0))
+        else:
+            proportional_control()
+            pub_blue_cmd.publish(blue_twist)
         if game_over != False:
             break
         rate.sleep()
