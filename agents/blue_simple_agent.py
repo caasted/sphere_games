@@ -53,10 +53,10 @@ def set_red_base(base):
 
 def yaw_vel_to_twist(yaw, vel): 
     twist_msg = Twist() 
-    twist_msg.linear = Vector3(0, 0, 0) 
-    twist_msg.angular.x = np.cos(yaw) * vel 
-    twist_msg.angular.y = np.sin(yaw) * vel 
-    twist_msg.angular.z = 0 
+    twist_msg.linear = Vector3(vel, 0, 0)
+    twist_msg.angular.x = 0
+    twist_msg.angular.y = 0
+    twist_msg.angular.z = yaw
     return twist_msg
 
 def get_heading_and_distance():
@@ -84,6 +84,7 @@ def get_heading_and_distance():
     if not neutral_zone and distance < 50:
         neutral_zone = True
     heading = np.arctan2(delta_y, delta_x)
+    heading = np.rad2deg(heading)
     return heading, distance
 
 # Agent function
@@ -97,7 +98,7 @@ def proportional_control():
             accumulated_error = 0
         else:
             accumulated_error += distance
-        speed = distance / 100. + accumulated_error / 10000.
+        speed = 5 * (distance / 100. + accumulated_error / 10000.)
     else:
         speed = 0
         heading = 0
@@ -111,10 +112,10 @@ def simple_agent():
     rospy.init_node('blue_agent', anonymous=True)
 
     pub_blue_cmd = rospy.Publisher('/blue_sphero/twist_cmd', Twist, queue_size=1)
-    sub_blue_center = rospy.Subscriber('/blue_sphero/center', Point, set_center, queue_size=1)
+    sub_blue_center = rospy.Subscriber('/blue_sphero/center_mm', Point, set_center, queue_size=1)
     sub_blue_flag = rospy.Subscriber('/blue_sphero/flag', Bool, set_flag, queue_size=1)
-    sub_blue_base = rospy.Subscriber('/blue_sphero/base', Point, set_blue_base, queue_size=1)
-    sub_red_base = rospy.Subscriber('/red_sphero/base', Point, set_red_base, queue_size=1)
+    sub_blue_base = rospy.Subscriber('/blue_sphero/base_mm', Point, set_blue_base, queue_size=1)
+    sub_red_base = rospy.Subscriber('/red_sphero/base_mm', Point, set_red_base, queue_size=1)
     sub_game_over = rospy.Subscriber('/game_over', Bool, set_game_over, queue_size=1)
     sub_game_state = rospy.Subscriber('/arena/game_state', Int16, set_game_state, queue_size=1)
 

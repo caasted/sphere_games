@@ -4,6 +4,8 @@ import numpy as np
 import rospy
 import cv2
 import sys
+import constants
+import utilities
 
 from std_msgs.msg import Bool, Int16
 from sensor_msgs.msg import CompressedImage, Image
@@ -18,35 +20,45 @@ class sphero_tracker_subtraction():
 
     def __init__(self):
         # Variables used by game
-        self.red_base = Point(390, 749, 0)
-        self.blue_base = Point(862, 249, 0)
+        self.base = {'red':Point(390, 749, 0), 'blue': Point(862, 249, 0)}
+        self.center = {'red':Point(0, 0, 0), 'blue':Point(0, 0, 0)}
 
-        self.red_center = Point(0, 0, 0)
-        self.blue_center = Point(0, 0, 0)
+        self.red_center_mm = Point(0, 0, 0)
+        self.blue_center_mm = Point(0, 0, 0)
+
+        red_x = (self.base['red'].x - constants.ORIGIN_PIXELS.x) * constants.COVERT_PIXEL2MM
+        red_y = ((constants.PICTURE_SIZE[1] - self.base[
+            'red'].y) - constants.ORIGIN_PIXELS.y) * constants.COVERT_PIXEL2MM
+        red_z = (self.base['red'].z - constants.ORIGIN_PIXELS.z) * constants.COVERT_PIXEL2MM
+
+        blue_x = (self.base['blue'].x - constants.ORIGIN_PIXELS.x) * constants.COVERT_PIXEL2MM
+        blue_y = ((constants.PICTURE_SIZE[1] - self.base[
+            'blue'].y) - constants.ORIGIN_PIXELS.y) * constants.COVERT_PIXEL2MM
+        blue_z = (self.base['blue'].z - constants.ORIGIN_PIXELS.z) * constants.COVERT_PIXEL2MM
+
+        self.red_base_mm = Point(red_x, red_y, red_z)
+
+        self.blue_base_mm = Point(blue_x, blue_y, blue_z)
 
         # Who has a flag
-        self.red_flag = False
-        self.blue_flag = False
+        self.flag = {'red':False, 'blue' : False}
 
         # Game State
         self.game_state = 0 # 0 = Waiting, 1 = Running, 2 = Finished
         self.time_elapsed = 0 # Seconds
         self.start = None
-        self.TOTAL_ALLOWED_TIME = 300 # Seconds
 
         # Current Score
-        self.red_score = 0
-        self.blue_score = 0
+        self.score = {'red':0, 'blue':0}
 
         self.initialized = False
 
+        # Available Images
         self.ref_image = None
-
         self.latest_img = None
-
         self.masked_image = None
-
         self.arena_image = None
+        self.diff_image = None
 
         self.blur_level = 25
 
@@ -55,9 +67,19 @@ class sphero_tracker_subtraction():
         version = cv2.__version__.split('.')[0]
         print "OpenCV Version: " + version
 
+    def convert_pixels_mm(self, pt_pixels):
+        x = pt_pixels.x - constants.ORIGIN_PIXELS.x
+        y = -(pt_pixels.y - constants.ORIGIN_PIXELS.y) # flip so negative is down
+
+        # Scale
+        x_mm = x * constants.COVERT_PIXEL2MM
+        y_mm = y * constants.COVERT_PIXEL2MM
+
+        return Point(x,y,0)
+
     def update_time(self):
         self.time_elapsed = time.time() - self.start
-        if(self.time_elapsed >= self.TOTAL_ALLOWED_TIME):
+        if(self.time_elapsed >= constants.TOTAL_ALLOWED_TIME):
             self.game_state = 2
             self.pub_game_over.publish(True)
 
@@ -89,14 +111,18 @@ class sphero_tracker_subtraction():
             self.game_state = 0
             self.start = None
             self.time_elapsed = 0
-            self.red_score = 0
-            self.blue_score = 0
+            self.score['red'] = 0
+            self.score['blue'] = 0
 
     def init_publishers(self):
         self.pub_red_center     = rospy.Publisher('/red_sphero/center', Point, queue_size=1)
         self.pub_blue_center    = rospy.Publisher('/blue_sphero/center', Point, queue_size=1)
+        self.pub_red_center_mm  = rospy.Publisher('/red_sphero/center_mm', Point, queue_size=1)
+        self.pub_blue_center_mm = rospy.Publisher('/blue_sphero/center_mm', Point, queue_size=1)
         self.pub_red_base       = rospy.Publisher('/red_sphero/base', Point, queue_size=1)
         self.pub_blue_base      = rospy.Publisher('/blue_sphero/base', Point, queue_size=1)
+        self.pub_red_base_mm    = rospy.Publisher('/red_sphero/base_mm', Point, queue_size=1)
+        self.pub_blue_base_mm   = rospy.Publisher('/blue_sphero/base_mm', Point, queue_size=1)
         self.pub_red_flag       = rospy.Publisher('/red_sphero/flag', Bool, queue_size=1)
         self.pub_blue_flag      = rospy.Publisher('/blue_sphero/flag', Bool, queue_size=1)
         self.pub_red_score      = rospy.Publisher('/red_sphero/score', Int16, queue_size=1)
@@ -107,7 +133,10 @@ class sphero_tracker_subtraction():
         self.pub_game_state     = rospy.Publisher('/arena/game_state', Int16, queue_size=1)
         self.pub_time_elapsed   = rospy.Publisher('/arena/time_elapsed', Int16, queue_size=1)
         self.pub_masked_image   = rospy.Publisher('/arena/masked_image', Image, queue_size=1)
+        self.pub_blue_mask      = rospy.Publisher('/arena/blue_mask', Image, queue_size=1)
+        self.pub_red_mask       = rospy.Publisher('/arena/red_mask', Image, queue_size=1)
         self.pub_arena_image    = rospy.Publisher('/arena/game_image', Image, queue_size=1)
+        self.pub_diff_image     = rospy.Publisher('/arena/diff_image', Image, queue_size=1)
 
         self.sub_image = rospy.Subscriber('/raspicam_node/image/compressed', CompressedImage, self.process_frame, queue_size=1)
 
@@ -144,6 +173,29 @@ class sphero_tracker_subtraction():
         self.initialized = True
         print("Tracker Initialized")
 
+    def find_contours(self, mask):
+        contours = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
+
+        center = None
+
+        if len(contours) > 0:
+            moments = cv2.moments(max(contours, key=cv2.contourArea))
+            center = Point(int(moments['m10'] / moments['m00']), int(moments['m01'] / moments['m00']), 0)
+
+        return center
+
+    def find_circles(self, mask):
+        circles = cv2.HoughCircles(mask, cv2.HOUGH_GRADIENT, 1, 20,
+                                   param1 = 50, param2 = 10, minRadius = 0, maxRadius = 0)
+
+        if(circles is None):
+            return None
+
+        for (x,y,r) in circles[0,:]:
+            return Point(x,y,0)
+
+        return None
+
     def get_spheros(self, cv2_image):
 
         # Mask by hue and find center
@@ -167,18 +219,14 @@ class sphero_tracker_subtraction():
         blue_mask = cv2.erode(blue_mask, None, iterations=2)
         blue_mask = cv2.dilate(blue_mask, None, iterations=2)
 
-        blue_center = None
-        red_center = None
+        self.pub_blue_mask.publish(self.bridge.cv2_to_imgmsg(blue_mask, encoding="mono8"))
+        self.pub_red_mask.publish(self.bridge.cv2_to_imgmsg(red_mask, encoding="mono8"))
 
-        red_contours = cv2.findContours(red_mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
-        if len(red_contours) > 0:
-            red_M = cv2.moments(max(red_contours, key=cv2.contourArea))
-            red_center = Point(int(red_M['m10'] / red_M['m00']), int(red_M['m01'] / red_M['m00']), 0)
+        #blue_center = self.find_contours(blue_mask)
+        #red_center = self.find_contours(red_mask)
 
-        blue_contours = cv2.findContours(blue_mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
-        if len(blue_contours) > 0:
-            blue_M = cv2.moments(max(blue_contours, key=cv2.contourArea))
-            blue_center = Point(int(blue_M['m10'] / blue_M['m00']), int(blue_M['m01'] / blue_M['m00']), 0)
+        blue_center = self.find_circles(blue_mask)
+        red_center = self.find_circles(red_mask)
 
         return {'blue':blue_center, 'red':red_center}
 
@@ -198,6 +246,7 @@ class sphero_tracker_subtraction():
         grey = cv2.cvtColor(cv2_img_blur, cv2.COLOR_BGR2GRAY)
 
         img_diff = cv2.absdiff(grey, self.ref_image)
+        self.diff_image = self.bridge.cv2_to_imgmsg(img_diff, encoding="mono8")
 
         ret, mask = cv2.threshold(img_diff, 10, 255, cv2.THRESH_BINARY)
 
@@ -229,10 +278,12 @@ class sphero_tracker_subtraction():
 
         # Return Sphero locations
         if(not spheros['red'] is None):
-            self.red_center = spheros['red']
+            self.center['red'] = spheros['red']
+            self.red_center_mm = self.convert_pixels_mm(spheros['red'])
 
         if (not spheros['blue'] is None):
-            self.blue_center = spheros['blue']
+            self.center['blue'] = spheros['blue']
+            self.blue_center_mm = self.convert_pixels_mm(spheros['blue'])
 
     # Scoring logic
     def update_scoring(self):
@@ -243,155 +294,47 @@ class sphero_tracker_subtraction():
         blue_at_home = False
 
         threshold = 100
-        if self.red_flag != False:
-            distance = np.sqrt((self.red_center.x - self.red_base.x) ** 2 +
-                               (self.red_center.y - self.red_base.y) ** 2)
+        if self.flag['red'] != False:
+            distance = np.sqrt((self.center['red'].x - self.base['red'].x) ** 2 +
+                               (self.center['red'].y - self.base['red'].y) ** 2)
             if distance < threshold:
                 red_at_home = True
         else:
-            distance = np.sqrt((self.red_center.x - self.blue_base.x) ** 2 +
-                               (self.red_center.y - self.blue_base.y) ** 2)
+            distance = np.sqrt((self.center['red'].x - self.base['blue'].x) ** 2 +
+                               (self.center['red'].y - self.base['blue'].y) ** 2)
             if distance < threshold:
                 red_at_away = True
 
-        if self.blue_flag != False:
-            distance = np.sqrt((self.blue_center.x - self.blue_base.x) ** 2 +
-                               (self.blue_center.y - self.blue_base.y) ** 2)
+        if self.flag['blue'] != False:
+            distance = np.sqrt((self.center['blue'].x - self.base['blue'].x) ** 2 +
+                               (self.center['blue'].y - self.base['blue'].y) ** 2)
             if distance < threshold:
                 blue_at_home = True
         else:
-            distance = np.sqrt((self.blue_center.x - self.red_base.x) ** 2 +
-                               (self.blue_center.y - self.red_base.y) ** 2)
+            distance = np.sqrt((self.center['blue'].x - self.base['red'].x) ** 2 +
+                               (self.center['blue'].y - self.base['red'].y) ** 2)
             if distance < threshold:
                 blue_at_away = True
 
         if red_at_home and blue_at_home:
-            self.red_score += 1
-            self.blue_score += 1
-            self.red_flag = False
-            self.blue_flag = False
+            self.score['red'] += 1
+            self.score['blue'] += 1
+            self.flag['red'] = False
+            self.flag['blue'] = False
         elif red_at_home:
-            self.red_score += 1
-            self.red_flag = False
-            self.blue_flag = False
+            self.score['red'] += 1
+            self.flag['red'] = False
+            self.flag['blue'] = False
         elif blue_at_home:
-            self.blue_score += 1
-            self.red_flag = False
-            self.blue_flag = False
+            self.score['blue'] += 1
+            self.flag['red'] = False
+            self.flag['blue'] = False
         else:
             if red_at_away:
-                self.red_flag = True
+                self.flag['red'] = True
             if blue_at_away:
-                self.blue_flag = True
+                self.flag['blue'] = True
         return
-
-    def update_arena(self, img):
-        # Write some Text
-
-        arena_img = img.copy()
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        bottomLeftCornerOfText = (10, 40)
-        fontScale = 1
-        fontColor = (255, 255, 255)
-        lineType = 2
-
-        cv2.putText(arena_img, 'LM Autonomy Hackathon',
-                    bottomLeftCornerOfText,
-                    font,
-                    fontScale,
-                    fontColor,
-                    lineType)
-
-        # Game State
-        if(self.game_state==0):
-            game_text = "Waiting"
-        elif(self.game_state==1):
-            game_text = "Running"
-        elif (self.game_state == 2):
-            game_text = "Game Over"
-        else:
-            game_text = "ERROR"
-
-        cv2.putText(arena_img, 'Status: '+ game_text,
-                    (10, 870),
-                    font,
-                    fontScale,
-                    fontColor,
-                    lineType)
-
-        # Time Remaining
-        cv2.putText(arena_img, 'Time Remaining: ' + str(self.TOTAL_ALLOWED_TIME - self.time_elapsed) + ' s',
-                    (10, 910),
-                    font,
-                    fontScale,
-                    fontColor,
-                    lineType)
-
-
-        # Position Information
-        cv2.putText(arena_img, 'Red (' + str(self.red_center.x) + ', ' + str(self.red_center.y)+')',
-                    (1050,40),
-                    font,
-                    fontScale,
-                    (0,0,255),
-                    lineType)
-
-
-        cv2.putText(arena_img, 'Blue (' + str(self.blue_center.x) + ', ' + str(self.blue_center.y)+')',
-                    (780,40),
-                    font,
-                    fontScale,
-                    (255,0,0),
-                    lineType)
-
-        # Score Information
-        cv2.putText(arena_img, 'Red Team: ' + str(self.red_score),
-                    (1050,910),
-                    font,
-                    fontScale,
-                    (0,0,255),
-                    lineType)
-
-
-        cv2.putText(arena_img, 'Blue Team: ' + str(self.blue_score),
-                    (780,910),
-                    font,
-                    fontScale,
-                    (255,0,0),
-                    lineType)
-
-        # Sphero Locations
-        if(self.red_flag):
-            thickness = -1
-        else:
-            thickness = 2
-
-        cv2.circle(arena_img, (self.red_center.x, self.red_center.y), 10, (0, 0, 255), thickness=thickness)
-
-        if(self.blue_flag):
-            thickness = -1
-        else:
-            thickness = 2
-
-        cv2.circle(arena_img, (self.blue_center.x, self.blue_center.y), 10, (255, 0, 0), thickness=thickness)
-
-        # Base Locations
-        if (not self.red_flag):
-            thickness = -1
-        else:
-            thickness = 2
-
-        cv2.circle(arena_img, (self.red_base.x, self.red_base.y), 10, (0, 0, 255), thickness=thickness)
-
-        if (not self.blue_flag):
-            thickness = -1
-        else:
-            thickness = 2
-
-        cv2.circle(arena_img, (self.blue_base.x, self.blue_base.y), 10, (255, 0, 0), thickness=thickness)
-
-        return arena_img
-
 
     def start_tracking(self):
 
@@ -401,29 +344,39 @@ class sphero_tracker_subtraction():
             self.update_game_state()
 
             if(not self.latest_img is None):
-                self.arena_image = self.update_arena(self.latest_img)
+                #self.arena_image = self.update_arena(self.latest_img)
+                self.arena_image = utilities.update_arena(self.game_state, self.time_elapsed,
+                                                          self.score, self.center, self.base,
+                                                          self.flag, self.latest_img)
                 arena_image = self.bridge.cv2_to_imgmsg(self.arena_image, encoding="bgr8")
                 self.pub_arena_image.publish(arena_image)
 
             if(not self.masked_image is None):
                 self.pub_masked_image.publish(self.masked_image)
 
+            if (not self.diff_image is None):
+                self.pub_diff_image.publish(self.diff_image)
+
             # Publish Centers
-            self.pub_red_center.publish(self.red_center)
-            self.pub_blue_center.publish(self.blue_center)
+            self.pub_red_center.publish(self.center['red'])
+            self.pub_blue_center.publish(self.center['blue'])
+            self.pub_red_center_mm.publish(self.red_center_mm)
+            self.pub_blue_center_mm.publish(self.blue_center_mm)
 
-            self.pub_red_base.publish(self.red_base)
-            self.pub_blue_base.publish(self.blue_base)
+            self.pub_red_base.publish(self.base['red'])
+            self.pub_blue_base.publish(self.base['blue'])
 
+            self.pub_red_base_mm.publish(self.red_base_mm)
+            self.pub_blue_base_mm.publish(self.blue_base_mm)
 
             # Publish Game State
             self.pub_game_state.publish(self.game_state)
             self.pub_time_elapsed.publish(self.time_elapsed)
-            self.pub_red_flag.publish(self.red_flag)
-            self.pub_blue_flag.publish(self.blue_flag)
+            self.pub_red_flag.publish(self.flag['red'])
+            self.pub_blue_flag.publish(self.flag['blue'])
 
-            self.pub_red_score.publish(self.red_score)
-            self.pub_blue_score.publish(self.blue_score)
+            self.pub_red_score.publish(self.score['red'])
+            self.pub_blue_score.publish(self.score['blue'])
 
             self.pub_game_over.publish(False)
 
