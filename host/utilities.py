@@ -1,5 +1,5 @@
 import cv2
-import host.constants as constants
+import constants
 import numpy as np
 
 
@@ -15,7 +15,7 @@ def calculate_distance(start, end):
 
     return distance
 
-def calculate_error_heading(start, end):
+def calculate_error_heading(start, end, positive_only=False):
 
     if(start is None):
         return
@@ -34,6 +34,9 @@ def calculate_error_heading(start, end):
         angle = angle - 360
     elif(angle < -180):
         angle = angle + 360
+
+    if(positive_only):
+        angle = (720 + angle)%360
 
     return angle
 

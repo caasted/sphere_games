@@ -4,8 +4,8 @@ import numpy as np
 import rospy
 import cv2
 import sys
-import host.constants as constants
-import host.utilities as utilities
+import constants
+import utilities
 
 from std_msgs.msg import Bool, Int16
 from sensor_msgs.msg import CompressedImage, Image

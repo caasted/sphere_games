@@ -3,18 +3,30 @@ import rospy
 from geometry_msgs.msg import Point, Twist, Vector3Stamped, PointStamped
 from std_msgs.msg import Bool, Int16, ColorRGBA
 import struct
+import sys
 
 class SpheroNode(object):
 
-    def __init__(self, name = "sphero", addr=None):
+    VERSION = "1.0"
+
+    def __init__(self, name = "sphero", color = None, addr=None):
         self._name = name
         self._addr = addr
+
+        self._color = color
 
         self._orb = Sphero(addr)
         self._connected = False
 
-    def connect(self, addr):
-        self._orb.connect(addr)
+        if (self._color is None):
+            self._color = ColorRGBA(0, 0, 128,0)
+        elif(self._color == "blue"):
+            self._color = ColorRGBA(0, 0, 128, 0)
+        elif (self._color == "red"):
+            self._color = ColorRGBA(128, 0, 0, 0)
+
+    def connect(self):
+        self._orb.connect()
         orb = self._orb.get_device_name()
         print("Connected to: " + orb['name'])
         rospy.loginfo("Connected to: " + orb['name'])
@@ -36,17 +48,55 @@ class SpheroNode(object):
 
         self._orb.roll(int(twist.linear.x), int(twist.angular.z))
 
+    def set_tail(self, brightness):
+        if(not self._connected):
+            return
+
+        self._orb.set_tail_light(brightness.data)
+
+
+    def set_stab(self, flag):
+        if(not self._connected):
+            return
+
+        goal_state = flag.data
+
+        print("Setting it to: " + str(goal_state))
+
+        if(goal_state):
+            print("Turning ON Stabilization")
+        else:
+            print("Turning OFF Stabilization")
+        self._orb.set_stabilization(goal_state)
+
     def set_color(self, color):
         if(not self._connected):
             return
 
         self._orb.set_rgb_led(int(color.r), int(color.g), int(color.b))
 
+    def reset_heading(self, heading):
+        if (not self._connected):
+            print(self._name + " is not connected)")
+            return
+        print("Reset Heading")
+        self._orb.set_heading(0)
+
     def set_heading(self, heading):
         if(not self._connected):
+            print(self._name + " is not connected)")
             return
+        print("Set Heading to: " + str(heading.data))
+        self._orb.set_stabilization(False)
 
-        self._orb.set_heading(heading.data)
+        self._orb.set_tail_light(255)
+        rospy.sleep(2)
+        self._orb.roll(1,heading.data)
+        rospy.sleep(2)
+        self._orb.set_heading(0)
+        rospy.sleep(2)
+        self._orb.set_tail_light(0)
+        self._orb.set_stabilization(True)
 
     def init_ros(self):
         rospy.init_node(self._name, anonymous=True)
@@ -56,7 +106,10 @@ class SpheroNode(object):
         # Subscriptions
         sub_cmd_vel = rospy.Subscriber(topic_root + '/cmd_vel', Twist, self.cmd_vel, queue_size=1)
         sub_color   = rospy.Subscriber(topic_root + '/set_color', ColorRGBA, self.set_color, queue_size=1)
+        sub_tail    = rospy.Subscriber(topic_root + '/set_tail', Int16, self.set_tail, queue_size=1)
+        sub_stab    = rospy.Subscriber(topic_root + '/set_stabilization', Bool, self.set_stab, queue_size=1)
         sub_heading = rospy.Subscriber(topic_root + '/set_heading', Int16, self.set_heading, queue_size=1)
+        sub_heading = rospy.Subscriber(topic_root + '/reset_heading', Int16, self.reset_heading, queue_size=1)
 
         # Publishables
         self.pub_odometry = rospy.Publisher(topic_root + '/odometry', PointStamped, queue_size=1)
@@ -140,8 +193,16 @@ class SpheroNode(object):
     def my_streaming(self, last_call):
         self._orb.update_streaming(rate=5)
 
+    def info(self):
+        print("Sphero Node v"+SpheroNode.VERSION)
+        print("Node: "+self._name+", Color: ("+ str(self._color.r) + "," +
+                                                str(self._color.g) + "," +
+                                                str(self._color.b) + "," +
+                                                str(self._color.a) + ")" )
+
     def main(self):
-        self.connect(self._addr)
+        self.info()
+        self.connect()
         self.init_ros()
 
         self.setup_publishables()
@@ -149,12 +210,26 @@ class SpheroNode(object):
         heartbeat = rospy.Timer(rospy.Duration(.05), self.my_ping)
         streaming = rospy.Timer(rospy.Duration(30), self.my_streaming)
 
+        self.set_color(self._color)
+
         rate = rospy.Rate(40)  # Hz
         while not rospy.is_shutdown():
             rate.sleep()
 
 if(__name__ == "__main__"):
-    #s = SpheroNode(addr="E7:D7:34:B0:4B:DB")
-    #s = SpheroNode(addr="DC:79:91:5A:9B:92")
-    s = SpheroNode(addr="D2:E6:0C:03:02:7D")
+
+    num_args = len(sys.argv)
+
+    name = "sphero"
+    color = "blue"
+    #addr = "E7:D7:34:B0:4B:DB"
+    #addr = "DC:79:91:5A:9B:92"
+    addr = "D2:E6:0C:03:02:7D"
+
+    if(num_args == 4):
+        name = sys.argv[1]
+        color = sys.argv[2]
+        addr = sys.argv[3]
+
+    s = SpheroNode(name=name, color=color, addr=addr)
     s.main()
