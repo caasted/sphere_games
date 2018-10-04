@@ -184,6 +184,8 @@ class ArenaSetup(object):
         while(not rospy.is_shutdown() and not self.ready):
             rate.sleep()
 
+        rospy.sleep(2)
+
         if(manual):
             for robot in self.robot_list:
                 self.pub_sphero_set_tail[robot['name']].publish(255)

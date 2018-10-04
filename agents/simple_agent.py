@@ -91,12 +91,15 @@ class simple_agent(object):
         return False
 
     def test_game(self):
+        rate = rospy.Rate(1)
         while not rospy.is_shutdown():
             if(not self.their_base is None and not self.my_base is None):
-                break
+                rate.sleep()
+                continue
 
             self.go_to_position(self.their_base, self.return_false, have_flag=False)
             self.go_to_position(self.my_base, self.return_false, have_flag=True)
+            rate.sleep()
 
 
     def play_game(self):
@@ -139,7 +142,7 @@ class simple_agent(object):
 
             rate.sleep()
 
-    def go_to_position(self, target, monitor_function, have_flag = False, allowed_error = 20, dwell_time = 10):
+    def go_to_position(self, target, monitor_function, have_flag = False, allowed_error = 20, dwell_time = 2):
         '''
         Attempts to get Sphero to go to target position, existing out of loop as soon as it is within allowed error
         :param target:
@@ -151,7 +154,8 @@ class simple_agent(object):
         '''
         print("Target Location: " + str(target))
 
-        rate = rospy.Rate(10)  # Hz
+        if(target is None):
+            return False
 
         time_center = time.time()
 
@@ -159,6 +163,7 @@ class simple_agent(object):
 
         accumulated_error = 0
 
+        rate = rospy.Rate(10)
         while not rospy.is_shutdown() and not monitor_function():
 
             if (self.my_position is None or target is None):
@@ -172,13 +177,15 @@ class simple_agent(object):
                 rate.sleep()
                 continue
 
+            #print("Current Error: distance: " + str(linear_error) + " angle: "+str(err_heading))
+
             if(np.abs(linear_error) < allowed_error):
                 accumulated_error = 0
                 if(not at_goal):
                     print("Touched Goal")
                     t = Twist()
                     t.linear = Vector3(0, 0, 0)
-                    t.angular = Vector3(0, 0, 360-err_heading)
+                    t.angular = Vector3(0, 0, err_heading)
                     self.pub_cmd_vel.publish(t)
                     at_goal = True
                     time_center = time.time()
@@ -198,7 +205,7 @@ class simple_agent(object):
                 accumulated_error += linear_error
 
             # Control Parameters
-            vel = linear_error * self.Kp + accumulated_error*self.Ki
+            vel = linear_error * self.Kp #+ accumulated_error*self.Ki
 
             if(vel > self.MAX_SPEED):
                 vel = self.MAX_SPEED
@@ -210,9 +217,11 @@ class simple_agent(object):
 
             rate.sleep()
 
+        return True
+
 
 if(__name__ == "__main__"):
-    b = simple_agent.simple_agent('red_sphero', opponent='blue_sphero')
+    b = simple_agent('red_sphero', opponent='blue_sphero')
 
     b.setup_ros()
 
