@@ -2,8 +2,10 @@ import rospy
 from std_msgs.msg import Bool, Int16, String, ColorRGBA
 from geometry_msgs.msg import Point, Twist, Vector3, PointStamped
 import sys
+import socket
+import rosgraph
 
-import host.utilities as util
+import utilities as util
 
 class ArenaSetup(object):
 
@@ -44,10 +46,18 @@ class ArenaSetup(object):
         self.arena_center[robot] = current_point
 
     def setup_ros(self):
+
+        try:
+            rosgraph.Master('/rostopic').getPid()
+        except socket.error:
+            raise rospy.ROSTopicIOException("Unable to communicate with master!")
+
         rospy.init_node('arena_setup', anonymous=True)
 
         for robot in self.robot_list:
             self.setup_robot(robot['name'])
+
+
 
     def setup_robot(self, name):
 
@@ -137,7 +147,8 @@ class ArenaSetup(object):
 
     def info_messages(self):
         print("Arena Setup v0.2")
-        print("Please Verify that the tracker is running, both spheros are in the arena and their host nodes are running")
+        print("Please Verify that you are ready to start, for automatic the tracker must be running, and "
+              "both spheros need to be in the arena with space to spare.")
         if sys.version_info[0] == 3:
             response = str(input("Ready? (Y/N):")).lower()
         else:
@@ -152,8 +163,7 @@ class ArenaSetup(object):
         :return:
         '''
         # Info Messages
-        if(not manual):
-            self.info_messages()
+        self.info_messages()
 
         # Verify ROS is "running" in the arena
         self.setup_ros()
@@ -188,7 +198,7 @@ class ArenaSetup(object):
 
 if(__name__ == "__main__"):
 
-    manual = True
+    manual = False
 
     if(len(sys.argv) == 2 and sys.argv[1] == "-m"):
         print("Using Manual Control")
