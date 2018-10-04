@@ -171,6 +171,11 @@ class SpheroNode(object):
         self.pub_gyro.publish(ps)
 
     def pub_odom_data(self, data):
+        '''
+        Publish Odometry data in mm
+        :param data:
+        :return:
+        '''
         if(len(data) == 0):
             return
 
@@ -178,8 +183,8 @@ class SpheroNode(object):
 
         ps = PointStamped()
         ps.header.stamp = rospy.Time.now()
-        ps.point.x = val[0] # assuming filtered values
-        ps.point.y = val[1]
+        ps.point.x = val[0]*10 # assuming filtered values
+        ps.point.y = val[1]*10
 
         self.pub_odometry.publish(ps)
 
@@ -223,6 +228,8 @@ class SpheroNode(object):
         self.info()
         self.connect()
         self.init_ros()
+
+        rospy.sleep(2)
 
         self.setup_publishables()
 

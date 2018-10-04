@@ -34,7 +34,7 @@ class ArenaSetup(object):
         self.robot_list = [
             {'name': 'red_sphero' , 'color': ColorRGBA(128,0,0,0)},
             {'name': 'blue_sphero', 'color': ColorRGBA(0, 0, 128, 0)},
-            {'name': 'sphero', 'color': ColorRGBA(0, 0, 128, 0)},
+            #{'name': 'sphero', 'color': ColorRGBA(0, 0, 128, 0)},
         ]
 
         self.ready = False
@@ -163,7 +163,7 @@ class ArenaSetup(object):
         print "Resetting Robot Locations"
 
         for robot in self.robot_list:
-            curr_position = self.arena_center[robot]
+            curr_position = self.arena_center[robot['name']]
 
             self.pub_sphero_set_position[robot['name']].publish(curr_position.point)
 
@@ -188,6 +188,7 @@ class ArenaSetup(object):
             for robot in self.robot_list:
                 self.pub_sphero_set_tail[robot['name']].publish(255)
                 self.pub_sphero_set_stab[robot['name']].publish(False)
+                rospy.sleep(2)
 
             if sys.version_info[0] == 3:
                 response = str(input("Hit Return once ALL robots are positioned")).lower()
@@ -198,6 +199,7 @@ class ArenaSetup(object):
                 self.pub_sphero_reset_heading[robot['name']].publish(0)
                 self.pub_sphero_set_stab[robot['name']].publish(True)
                 self.pub_sphero_set_tail[robot['name']].publish(0)
+                rospy.sleep(2)
 
         else:
             for robot in self.robot_list:
