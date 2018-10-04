@@ -16,7 +16,7 @@ game_state = 0
 red_twist = Twist()
 Q_table = {}
 yaw_actions = np.array(list(range(8))) * np.pi / 4
-vel_actions = np.array(list(range(1, 2))) * 15 # One speed
+vel_actions = np.array(list(range(1, 2))) * 25 # One speed
 
 # Helper functions
 def set_center(sphere_center):
@@ -55,10 +55,10 @@ def set_red_base(base):
 
 def yaw_vel_to_twist(yaw, vel):
     twist_msg = Twist()
-    twist_msg.linear = Vector3(0, 0, 0)
-    twist_msg.angular.x = np.cos(yaw) * vel
-    twist_msg.angular.y = np.sin(yaw) * vel
-    twist_msg.angular.z = 0
+    twist_msg.linear = Vector3(vel, 0, 0)
+    twist_msg.angular.x = 0
+    twist_msg.angular.y = 0
+    twist_msg.angular.z = (1080 + np.rad2deg(yaw))%360
     return twist_msg
 
 def parse_dict(unformatted):
@@ -148,25 +148,21 @@ def learning_agent():
     # Setup ROS message handling
     rospy.init_node('red_agent', anonymous=True)
 
-    pub_red_cmd = rospy.Publisher('/red_sphero/twist_cmd', Twist, queue_size=1)
+    pub_red_cmd = rospy.Publisher('/red_sphero/cmd_vel', Twist, queue_size=1)
     sub_red_center = rospy.Subscriber('/red_sphero/center', Point, set_center, queue_size=1)
     sub_red_flag = rospy.Subscriber('/red_sphero/flag', Bool, set_flag, queue_size=1)
-    sub_blue_base = rospy.Subscriber('/blue_sphero/base', Point, set_blue_base, queue_size=1)
-    sub_red_base = rospy.Subscriber('/red_sphero/base', Point, set_red_base, queue_size=1)
-    sub_game_over = rospy.Subscriber('/game_over', Bool, set_game_over, queue_size=1)
+    sub_blue_base = rospy.Subscriber('/arena/blue_sphero/base', Point, set_blue_base, queue_size=1)
+    sub_red_base = rospy.Subscriber('/arena/red_sphero/base', Point, set_red_base, queue_size=1)
     sub_game_state = rospy.Subscriber('/arena/game_state', Int16, set_game_state, queue_size=1)
 
     # Agent control loop
     rate = rospy.Rate(5) # Hz
     while not rospy.is_shutdown():
 
-        if(game_state == 0):
-            pub_red_cmd.publish(yaw_vel_to_twist(0, 0))
-        else:
-            Q_learning()
-            pub_red_cmd.publish(red_twist)
-            if game_over != False:
-                break
+        Q_learning()
+        pub_red_cmd.publish(red_twist)
+        if game_state == 2:
+            break
         rate.sleep()
 
     np.save(agent_file, Q_table)
