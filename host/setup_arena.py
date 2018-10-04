@@ -24,6 +24,7 @@ class ArenaSetup(object):
         self.pub_sphero_set_color = {}
         self.pub_sphero_set_tail = {}
         self.pub_sphero_set_stab = {}
+        self.pub_sphero_set_position = {}
 
         self.TIME_TO_MOVE = 3
         self.CAL_RES_ANGLE = 5 # Angle to turn sphero when determining heading
@@ -72,6 +73,7 @@ class ArenaSetup(object):
         self.pub_sphero_set_color[name] = rospy.Publisher('/'+name+'/set_color', ColorRGBA, queue_size=1)
         self.pub_sphero_set_tail[name] = rospy.Publisher('/' + name + '/set_tail', Int16, queue_size=1)
         self.pub_sphero_set_stab[name] = rospy.Publisher('/' + name + '/set_stabilization', Bool, queue_size=1)
+        self.pub_sphero_set_position[name] = rospy.Publisher('/' + name + '/set_position', Point, queue_size=1)
 
 
 
@@ -157,6 +159,16 @@ class ArenaSetup(object):
         if(not(response == "y" or response == "yes")):
             exit(0)
 
+    def set_position(self):
+        print "Resetting Robot Locations"
+
+        for robot in self.robot_list:
+            curr_position = self.arena_center[robot]
+
+            self.pub_sphero_set_position[robot['name']].publish(curr_position.point)
+
+
+
     def start_setup(self, manual = False):
         '''
         Setup
@@ -190,6 +202,8 @@ class ArenaSetup(object):
         else:
             for robot in self.robot_list:
                 self.calibrate_sphero(robot['name'])
+
+        self.set_position()
 
         print("Done")
 

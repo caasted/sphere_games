@@ -73,7 +73,7 @@ class simple_agent(object):
 
         self.sub_get_odometry = rospy.Subscriber(prefix + '/odometry', PointStamped, self.set_odometry, queue_size=1)
         self.sub_get_vel      = rospy.Subscriber(prefix + '/velocity', PointStamped, self.set_velocity, queue_size=1)
-        self.sub_get_accel    = rospy.Subscriber(prefix + '/accel',    Int16,        self.set_accel(), queue_size=1)
+        self.sub_get_accel    = rospy.Subscriber(prefix + '/accel',    Int16,        self.set_accel, queue_size=1)
 
         self.sub_center       = rospy.Subscriber(arena_prefix + '/center_mm', PointStamped, self.set_arena_position, queue_size=1)
         self.sub_base         = rospy.Subscriber(arena_prefix + '/base_mm',   Point,        self.set_my_base, queue_size=1)
@@ -161,8 +161,12 @@ class simple_agent(object):
 
         while not rospy.is_shutdown() and not monitor_function():
 
+            if (self.my_position is None or target is None):
+                rate.sleep()
+                continue
+
             linear_error = util.calculate_distance(self.my_position.point, target)
-            err_heading = util.calculate_error_heading(self.my_position.point, target)
+            err_heading = util.calculate_error_heading(self.my_position.point, target, positive_only=True)
 
             if(linear_error is None or err_heading is None):
                 rate.sleep()
@@ -174,7 +178,7 @@ class simple_agent(object):
                     print("Touched Goal")
                     t = Twist()
                     t.linear = Vector3(0, 0, 0)
-                    t.angular = Vector3(0, 0, err_heading)
+                    t.angular = Vector3(0, 0, 360-err_heading)
                     self.pub_cmd_vel.publish(t)
                     at_goal = True
                     time_center = time.time()
@@ -208,7 +212,7 @@ class simple_agent(object):
 
 
 if(__name__ == "__main__"):
-    b = simple_agent('blue_node')
+    b = simple_agent.simple_agent('red_sphero', opponent='blue_sphero')
 
     b.setup_ros()
 

@@ -82,6 +82,24 @@ class SpheroNode(object):
         print("Reset Heading")
         self._orb.set_heading(0)
 
+    def set_position(self, pt):
+        '''
+        Set Position of Sphero, in mm (automatically convert to cm here)
+        :param pt:
+        :return:
+        '''
+        if (not self._connected):
+            print(self._name + " is not connected)")
+            return
+
+        print("Setting Position to: \n" + str(pt))
+
+        x = int(pt.x/10)
+        y = int(pt.y/10)
+
+        self._orb.config_locator(x, y, 0)
+
+
     def set_heading(self, heading):
         if(not self._connected):
             print(self._name + " is not connected)")
@@ -110,6 +128,7 @@ class SpheroNode(object):
         sub_stab    = rospy.Subscriber(topic_root + '/set_stabilization', Bool, self.set_stab, queue_size=1)
         sub_heading = rospy.Subscriber(topic_root + '/set_heading', Int16, self.set_heading, queue_size=1)
         sub_heading = rospy.Subscriber(topic_root + '/reset_heading', Int16, self.reset_heading, queue_size=1)
+        sub_set_pos = rospy.Subscriber(topic_root + '/set_position', Point, self.set_position, queue_size=1)
 
         # Publishables
         self.pub_odometry = rospy.Publisher(topic_root + '/odometry', PointStamped, queue_size=1)
