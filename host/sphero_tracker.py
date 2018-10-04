@@ -66,8 +66,14 @@ class sphero_tracker_subtraction():
 
         self.bridge = CvBridge()
 
-        version = cv2.__version__.split('.')[0]
-        print("OpenCV Version: " + version)
+        version = cv2.__version__.split('.')
+
+        if(int(version[0]) < 3):
+            print("Please upgrade your opencv version to 3.0, Current OpenCV Version: " + version[0] + "." + version[1])
+            print("  sudo pip install opencv-python")
+            exit(1)
+
+        print("Good to go! OpenCV Version: " + version[0] + "." + version[1])
 
     def convert_pixels_mm(self, pt_pixels, time):
         x = pt_pixels.x - constants.ORIGIN_PIXELS.x

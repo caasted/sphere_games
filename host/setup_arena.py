@@ -31,6 +31,7 @@ class ArenaSetup(object):
         self.robot_list = [
             {'name': 'red_sphero' , 'color': ColorRGBA(128,0,0,0)},
             {'name': 'blue_sphero', 'color': ColorRGBA(0, 0, 128, 0)},
+            {'name': 'sphero', 'color': ColorRGBA(0, 0, 128, 0)},
         ]
 
         self.ready = False
