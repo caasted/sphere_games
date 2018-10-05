@@ -139,6 +139,14 @@ class simple_agent(object):
                     game_start_msg_shown = False
                     game_end_msg_shown = True
                 pass
+            elif(self.game_state == 3): # Test Mode
+                if(not game_start_msg_shown):
+                    print("Entering Test Mode...")
+                    start_msg_shown = False
+                    game_start_msg_shown = True
+                    game_end_msg_shown = False
+                self.go_to_position(self.their_base, self.end_early)
+                self.go_to_position(self.my_base, self.end_early)
 
             rate.sleep()
 
