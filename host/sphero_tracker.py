@@ -93,7 +93,6 @@ class sphero_tracker_subtraction():
         self.time_elapsed = time.time() - self.start
         if(self.time_elapsed >= constants.TOTAL_ALLOWED_TIME):
             self.game_state = 2
-            self.pub_game_over.publish(True)
 
     def update_game_state(self):
 
@@ -104,6 +103,9 @@ class sphero_tracker_subtraction():
             self.update_scoring()
             self.update_time()
         elif(self.game_state == 2): # Complete
+            pass
+        elif(self.game_state == 3): # Test Mode
+            self.time_elapsed = 0
             pass
         else: # Invalid States
             pass

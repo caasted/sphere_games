@@ -2,8 +2,6 @@
 
 pushd "$(dirname "$0")"
 
-start_teams.sh
-
 source set_team_addr.sh
 
 export ROS_MASTER_URI="http://192.168.42.100:11311"
