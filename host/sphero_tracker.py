@@ -20,8 +20,15 @@ class sphero_tracker_subtraction():
 
     def __init__(self):
         # Variables used by game
-        self.base = {'red':Point(390, 749, 0), 'blue': Point(862, 249, 0)}
+        self.base = {'red':constants.RED_BASE, 'blue': constants.BLUE_BASE}
         self.center = {'red':Point(0, 0, 0), 'blue':Point(0, 0, 0)}
+
+        # Put 25pixel fudge on edges - used to ignore points found outside
+        # (the fudge factor could be in constants if it needs to change)
+        self.bounds = { 'left': min(self.base['red'].x,self.base['blue'].x)-25,
+                        'right': max(self.base['red'].x,self.base['blue'].x)+25,
+                        'top': min(self.base['red'].y,self.base['blue'].y)-25,
+                        'bottom': max(self.base['red'].y,self.base['blue'].y)+25 }
 
         empty_point = PointStamped()
 
@@ -206,7 +213,14 @@ class sphero_tracker_subtraction():
             return None
 
         for (x,y,r) in circles[0,:]:
-            return Point(x,y,0)
+            # Only accept point if within bounds of arena
+            if (self.bounds['left'] < x < self.bounds['right']
+              and self.bounds['top'] < y < self.bounds['bottom']):
+                return Point(x,y,0)
+            #else:
+            #    print("Ignore %g,%g outside %g..%g, %g..%g" % 
+            #        (x,y,self.bounds['left'],self.bounds['right'],
+            #         self.bounds['top'],self.bounds['bottom']))
 
         return None
 
@@ -266,7 +280,14 @@ class sphero_tracker_subtraction():
 
         masked_img = cv2.bitwise_and(cv2_img, cv2_img, mask=mask)
 
-        return masked_img
+        # Extract only arena portion (e.g. zero everything outside arena)
+        # (technique from 'stackoverflow.com/questions/11492214')
+        extracted = np.zeros(masked_img.shape,np.uint8)
+        extracted[self.bounds['top']:self.bounds['bottom'],
+                  self.bounds['left']:self.bounds['right']] \
+          = masked_img[self.bounds['top']:self.bounds['bottom'],
+                       self.bounds['left']:self.bounds['right']]
+        return extracted
 
     def process_frame(self, image_data):
         '''
