@@ -3,7 +3,8 @@ import os
 import numpy as np
 import rospy
 from std_msgs.msg import Bool, Int16
-from geometry_msgs.msg import Twist, Point, Vector3
+from geometry_msgs.msg import Twist, Point, PointStamped, Vector3
+import utils.arena as util
 
 # Global variables
 red_center = Point()
@@ -21,7 +22,7 @@ vel_actions = np.array(list(range(1, 2))) * 25 # One speed
 # Helper functions
 def set_center(sphere_center):
     global red_center
-    red_center = sphere_center
+    red_center = util.mm_2_pixel(sphere_center.point)
     return
 
 def set_flag(flag_status):
@@ -99,7 +100,7 @@ def Q_learning():
         Q_value = Q_table[previous_grid][previous_choice]
         Q_table[previous_grid][previous_choice] += reward
 
-    if (np.random.random() < 0.2 
+    if (np.random.random() < 0.2
         or (heading, distance) not in Q_table):
         yaw_choice = np.random.choice(yaw_actions)
         vel_choice = np.random.choice(vel_actions)
@@ -128,7 +129,7 @@ def Q_learning():
     Q_table['previous_grid'] = (heading, distance)
     Q_table['previous_choice'] = (yaw_choice, vel_choice)
 
-    print("Yaw: {}, Vel: {}, Value: {}".format(yaw_choice, vel_choice, 
+    print("Yaw: {}, Vel: {}, Value: {}".format(yaw_choice, vel_choice,
         current_value))
     yaw_choice = -yaw_choice # Switch from camera to world coordinates
     red_twist = yaw_vel_to_twist(yaw_choice, vel_choice)
@@ -149,24 +150,56 @@ def learning_agent():
     rospy.init_node('red_agent', anonymous=True)
 
     pub_red_cmd = rospy.Publisher('/red_sphero/cmd_vel', Twist, queue_size=1)
-    sub_red_center = rospy.Subscriber('/red_sphero/center', Point, set_center, queue_size=1)
+    sub_red_center = rospy.Subscriber('/red_sphero/odometry', PointStamped, set_center, queue_size=1)
     sub_red_flag = rospy.Subscriber('/red_sphero/flag', Bool, set_flag, queue_size=1)
     sub_blue_base = rospy.Subscriber('/arena/blue_sphero/base', Point, set_blue_base, queue_size=1)
     sub_red_base = rospy.Subscriber('/arena/red_sphero/base', Point, set_red_base, queue_size=1)
     sub_game_state = rospy.Subscriber('/arena/game_state', Int16, set_game_state, queue_size=1)
 
+    start_msg_shown = False
+    game_start_msg_shown = False
+    game_end_msg_shown = False
+
     # Agent control loop
     rate = rospy.Rate(5) # Hz
     while not rospy.is_shutdown():
 
-        Q_learning()
-        pub_red_cmd.publish(red_twist)
-        if game_state == 2:
-            break
+        if (game_state == 0):  # Waiting for game to start
+            if (not start_msg_shown):
+                print("Waiting for game to start...")
+
+                start_msg_shown = True
+                game_start_msg_shown = False
+                game_end_msg_shown = False
+            pass
+        elif (game_state == 1):  # Game Active
+            if (not game_start_msg_shown):
+                print("Starting Game...")
+                start_msg_shown = False
+                game_start_msg_shown = True
+                game_end_msg_shown = False
+
+            Q_learning()
+            pub_red_cmd.publish(red_twist)
+
+        elif (game_state == 2):  # Game Over
+            if (not game_end_msg_shown):
+                print("Game Ended")
+                start_msg_shown = False
+                game_start_msg_shown = False
+                game_end_msg_shown = True
+                np.save(agent_file, Q_table)
+                print("Game ended. Agent saved.")
+
+        elif (game_state == 3):  # Test Mode
+            if (not game_start_msg_shown):
+                print("Entering Test Mode...")
+                start_msg_shown = False
+                game_start_msg_shown = True
+                game_end_msg_shown = False
+
         rate.sleep()
 
-    np.save(agent_file, Q_table)
-    print("Game ended. Agent saved.")
     return
 
 if __name__ == '__main__':

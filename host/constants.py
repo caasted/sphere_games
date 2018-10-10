@@ -11,8 +11,16 @@ PICTURE_SIZE = (1280, 960)
 ORIGIN_PIXELS = Point(619, 501, 0)
 RED_BASE = Point(390, 749, 0)
 BLUE_BASE = Point(862, 249, 0)
-ARENA_WIDTH_PIXELS = 828        # assumed square
+
+ARENA_WIDTH_PIXELS = 1021 - 205 # assumed square
+ARENA_WIDTH_MM = 1143           # assumed square
+WALL_TO_BASE = 70               # Assume square, and that bases are in corners, fudge factor included
+
+ARENA_BOUNDS = {'left': min(RED_BASE.x, BLUE_BASE.x) - WALL_TO_BASE,
+                'right': max(RED_BASE.x, BLUE_BASE.x) + WALL_TO_BASE,
+                'top': min(RED_BASE.y, BLUE_BASE.y) - WALL_TO_BASE,
+                'bottom': max(RED_BASE.y, BLUE_BASE.y) + WALL_TO_BASE}
 
 # These should be good enough if arena built-to-spec
-ARENA_WIDTH_MM = 1145           # assumed square
-COVERT_PIXEL2MM = ARENA_WIDTH_MM / ARENA_WIDTH_PIXELS
+COVERT_PIXEL2MM = (ARENA_WIDTH_MM/10.) / (ARENA_WIDTH_PIXELS/10.)
+COVERT_MM2PIXEL = (ARENA_WIDTH_PIXELS/10.) / (ARENA_WIDTH_MM/10.)

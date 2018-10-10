@@ -1,7 +1,21 @@
 import cv2
-import constants
+import host.constants as constants
 import numpy as np
+from geometry_msgs.msg import Point
 
+def pixels_2_mm(pt_px):
+    x = (pt_px.x - constants.ORIGIN_PIXELS.x) * constants.COVERT_PIXEL2MM
+    y = -1 * ((pt_px.y - constants.ORIGIN_PIXELS.y) * constants.COVERT_PIXEL2MM)
+    z = (constants.ORIGIN_PIXELS.z - pt_px.z) * constants.COVERT_PIXEL2MM
+
+    return Point(int(x),int(y),int(z))
+
+def mm_2_pixel(pt_mm):
+    x = constants.ORIGIN_PIXELS.x + (pt_mm.x * constants.COVERT_MM2PIXEL)
+    y = constants.ORIGIN_PIXELS.y - (pt_mm.y * constants.COVERT_MM2PIXEL)
+    z = constants.ORIGIN_PIXELS.z + (pt_mm.z * constants.COVERT_MM2PIXEL)
+
+    return Point(int(x),int(y),int(z))
 
 def calculate_distance(start, end):
     if(start is None):
