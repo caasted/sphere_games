@@ -224,6 +224,7 @@ class SpheroTracker():
                 if(val > maxVal):
                     maxVal = val
                     pt = Point(x,y,0)
+        return pt
 
     def get_spheros(self, cv2_image):
 
@@ -284,10 +285,10 @@ class SpheroTracker():
         # Extract only arena portion (e.g. zero everything outside arena)
         # (technique from 'stackoverflow.com/questions/11492214')
         extracted = np.zeros(masked_img.shape,np.uint8)
-        extracted[self.bounds['top']:self.bounds['bottom'],
-                  self.bounds['left']:self.bounds['right']] \
-          = masked_img[self.bounds['top']:self.bounds['bottom'],
-                       self.bounds['left']:self.bounds['right']]
+        extracted[constants.ARENA_BOUNDS['top']:constants.ARENA_BOUNDS['bottom'],
+        constants.ARENA_BOUNDS['left']:constants.ARENA_BOUNDS['right']] \
+          = masked_img[constants.ARENA_BOUNDS['top']:constants.ARENA_BOUNDS['bottom'],
+            constants.ARENA_BOUNDS['left']:constants.ARENA_BOUNDS['right']]
         return extracted
 
     def update_locations(self, blue_pt, red_pt, stamp):
