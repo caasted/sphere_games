@@ -3,20 +3,21 @@ from getkey import getkey, keys
 
 import numpy as np
 import rospy
-from std_msgs.msg import Bool
+from std_msgs.msg import Int16
 from geometry_msgs.msg import Twist, Vector3
 
 # Global variables
 heading = 0
 speed = 0
+pub_reset = None
 
 # Helper functions
 def yaw_vel_to_twist(yaw, vel):
     twist_msg = Twist() 
-    twist_msg.linear = Vector3(0, 0, 0) 
-    twist_msg.angular.x = np.cos(yaw) * vel 
-    twist_msg.angular.y = np.sin(yaw) * vel 
-    twist_msg.angular.z = 0 
+    twist_msg.linear = Vector3(vel, 0, 0)
+    twist_msg.angular.x = 0
+    twist_msg.angular.y = 0
+    twist_msg.angular.z = yaw
     return twist_msg
 
 # User inputs
@@ -48,21 +49,23 @@ def get_user_commands():
 
     # Reset Sphero internal heading
     if reset_msg:
-        twist_msg.linear.z = -1
+        pub_reset.publish(0)
 
     return twist_msg, reset_msg
 
 # Init function
 def manual_control():
-    global game_over
+    global game_over, pub_reset
     # Setup ROS message handling
     rospy.init_node('blue_agent', anonymous=True)
 
     # Pass command line argument '1' for red, otherwise blue
     if len(sys.argv) > 1 and sys.argv[1] == '1':
-        pub_cmd = rospy.Publisher('/red_sphero/twist_cmd', Twist, queue_size=1)
+        pub_cmd = rospy.Publisher('/red_sphero/cmd_vel', Twist, queue_size=1)
+        pub_reset = rospy.Publisher('/red_sphero/reset_heading', Int16, queue_size=1)
     else:
-        pub_cmd = rospy.Publisher('/blue_sphero/twist_cmd', Twist, queue_size=1)
+        pub_cmd = rospy.Publisher('/blue_sphero/cmd_vel', Twist, queue_size=1)
+        pub_reset = rospy.Publisher('/red_sphero/reset_heading', Int16, queue_size=1)
 
     # Agent control loop
     rate = rospy.Rate(10) # Hz
